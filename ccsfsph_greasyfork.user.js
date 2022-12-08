@@ -29,17 +29,17 @@
     const originFetch = fetch;
     // https://juejin.cn/post/7135590843544502308
     window.unsafeWindow.fetch = (url, options) => {
-        console.log('unsafeWindow.fetch, url: ', url);
-        console.log('unsafeWindow.fetch, options: ', options);
+        console.debug('unsafeWindow.fetch, url: ', url);
+        console.debug('unsafeWindow.fetch, options: ', options);
         return originFetch(url, options).then(async (response) => {
-            console.log('unsafeWindow.fetch, response ', response);
+            console.debug('unsafeWindow.fetch, response ', response);
             if (url.indexOf('/generate') > -1) {
-                console.log('unsafeWindow.fetch, get the generate request success');
+                console.debug('unsafeWindow.fetch, get the generate request success');
                 // why we have to clone the origin response, otherwise the page cannot continue????
                 const responseClone = response.clone();
-                console.log('unsafeWindow.fetch, responseClone ', responseClone);
+                console.debug('unsafeWindow.fetch, responseClone ', responseClone);
                 let res = await responseClone.json();
-                console.log('unsafeWindow.fetch, res ', res);
+                console.debug('unsafeWindow.fetch, res ', res);
                 localStorage.setItem('generate-request', JSON.stringify(res));
             }
             return response;
@@ -51,9 +51,6 @@
 
     // ====================== global constants begin ======================
     // use UPPER_CAMEL_CASE to identify this is a constant
-
-    // whether to enable the log, use true to enable, use false to disable
-    const IS_LOG_ENABLE = true;
 
     // identify whether use https or not, true to use https, false to use http
     const IS_USE_HTTPS = true;
@@ -106,14 +103,6 @@
     // ====================== global functions begin ======================
 
     // ---------------------- base function begin ----------------------
-    function log(...msg) {
-        if (IS_LOG_ENABLE) {
-            console.log(msg);
-        }
-    }
-    // log handle, set 'verbose' to see the debug info
-    // https://stackoverflow.com/questions/52453512/how-to-disable-console-log-on-production-and-display-a-banner
-    // use console.debug("xxx") to log the debug info... DON'T use console.log("xx") no more
 
     function getRequestURLProtocol() {
         return IS_USE_HTTPS ? 'https://' : 'http://';
@@ -127,20 +116,20 @@
     // whther or not the user change location, return true if the location change, return false if the location doesn't change
     function isLocationChange() {
         updateGlobalPageByHref();
-        console.log("isLocationChange, href", href);
-        console.log("isLocationChange, location.href ", location.href);
+        console.debug("isLocationChange, href", href);
+        console.debug("isLocationChange, location.href ", location.href);
         let flag = href !== location.href;
-        console.log("isLocationChange, flag ", flag);
+        console.debug("isLocationChange, flag ", flag);
         href = location.href;
         if (flag) {
             g_isUpdateLocationChangeFinish = false;
-            console.log("isLocationChange, location change");
+            console.debug("isLocationChange, location change");
         }
         return flag;
     }
 
     function updateGlobalPageByHref() {
-        log("invoke updateGlobalPageByHref...");
+        console.debug("invoke updateGlobalPageByHref...");
         let userDisplayURL = location.href;
         // https://ccsf.collegescheduler.com/terms/Spring%202023/options
         if (userDisplayURL.indexOf('/options') !== -1) {
@@ -169,7 +158,7 @@
      */
     function reverseProfessorName(professorName) {
         // convert from `Conner, Constance` to `constance-conner`
-        log('reverseProfessorName, professorName ', professorName);
+        console.debug('reverseProfessorName, professorName ', professorName);
         if (!professorName) {
             console.warn('reverseProfessorName, professorName is blank!!!')
             return;
@@ -198,7 +187,7 @@
 
     function getCCSFTeacherInfo(professorName, professorCellElement) {
         let teacherInfoURL = getCCSFTeacherInfoURL(professorName);
-        console.log('getCCSFTeacherInfo, teacherInfoURL ', teacherInfoURL);
+        console.debug('getCCSFTeacherInfo, teacherInfoURL ', teacherInfoURL);
         GM_xmlhttpRequest({
             method: "GET",
             url: teacherInfoURL,
@@ -207,9 +196,9 @@
                 'Accept': 'text/html',
             },
             onload: function (response) {
-                console.log('getCCSFTeacherInfo, response ', response);
+                console.debug('getCCSFTeacherInfo, response ', response);
                 let htmlText = response.responseText;
-                console.log('getCCSFTeacherInfo, htmlText ', htmlText);
+                console.debug('getCCSFTeacherInfo, htmlText ', htmlText);
                 if (!htmlText) {
                     return;
                 }
@@ -226,26 +215,26 @@
                 // TODO one day, I will use the regex to do it, haha
                 let emailTextSymbol = '<div class="field__label">Email</div>';
                 let emailTextSymbolLength = emailTextSymbol.length;
-                log('getCCSFTeacherInfo, emailTextSymbolLength ', emailTextSymbolLength);
+                console.debug('getCCSFTeacherInfo, emailTextSymbolLength ', emailTextSymbolLength);
                 let emailBeginIndex = htmlText.indexOf(emailTextSymbol);
-                log('getCCSFTeacherInfo, emailBeginIndex ', emailBeginIndex);
+                console.debug('getCCSFTeacherInfo, emailBeginIndex ', emailBeginIndex);
                 let beginFindIndex = emailBeginIndex + emailTextSymbolLength - 1;
-                log('getCCSFTeacherInfo, beginFindIndex ', beginFindIndex);
+                console.debug('getCCSFTeacherInfo, beginFindIndex ', beginFindIndex);
                 let emailEndIndex = htmlText.indexOf('</div>', beginFindIndex);
-                log('getCCSFTeacherInfo, emailEndIndex ', emailEndIndex);
+                console.debug('getCCSFTeacherInfo, emailEndIndex ', emailEndIndex);
                 let emailHTMLTextLength = emailEndIndex - emailBeginIndex;
-                log('getCCSFTeacherInfo, emailHTMLTextLength ', emailHTMLTextLength);
+                console.debug('getCCSFTeacherInfo, emailHTMLTextLength ', emailHTMLTextLength);
                 let emailHTMLText = htmlText.substr(emailBeginIndex, emailHTMLTextLength)
-                log('getCCSFTeacherInfo, emailHTMLText ', emailHTMLText);
+                console.debug('getCCSFTeacherInfo, emailHTMLText ', emailHTMLText);
                 // now, I get `<div class=\"field__label\">Email</div>\n              <div class=\"field__item\"><a href=\"mailto:cconner@ccsf.edu\">cconner@ccsf.edu</a>`
                 // I need tot get cconner@ccsf.edu
                 let emailHTMLText2 = emailHTMLText.replace('<div class=\"field__label\">Email</div>\n              <div class=\"field__item\">', "");
                 // <a href="mailto:cconner@ccsf.edu">cconner@ccsf.edu</a>
-                log('getCCSFTeacherInfo, emailHTMLText2 ', emailHTMLText2);
+                console.debug('getCCSFTeacherInfo, emailHTMLText2 ', emailHTMLText2);
                 // see https://blog.csdn.net/zzti_erlie/article/details/89842391
                 let emailRegex = /">(.*)<\/a>/;
                 let email = emailRegex.exec(emailHTMLText2)[1].trim();
-                console.log('getCCSFTeacherInfo, email ', email);
+                console.debug('getCCSFTeacherInfo, email ', email);
                 professorCellElement.innerHTML = getEmailHTML(email);
             }
         });
@@ -276,13 +265,13 @@
 
     // set extParams a default value, otherwise it will display undefined
     function setInstructorElement(professorName, changeHerfElement, url, extParams = '') {
-        log('setInstructorElement, professorName', professorName);
-        log('setInstructorElement, changeHerfElement', changeHerfElement);
-        log('setInstructorElement, extParams', extParams);
+        console.debug('setInstructorElement, professorName', professorName);
+        console.debug('setInstructorElement, changeHerfElement', changeHerfElement);
+        console.debug('setInstructorElement, extParams', extParams);
         if (changeHerfElement) {
             // remove the origin innerHTML
             changeHerfElement.innerHTML = '';
-            log('searchProfessorByRMP, remove the origin innerHTML');
+            console.debug('searchProfessorByRMP, remove the origin innerHTML');
             let aElement = document.createElement('a');
             aElement.setAttribute('href', url);
             aElement.setAttribute('target', '_blank');
@@ -311,36 +300,36 @@
 
     // TODO: CACHE THE TEACHER ALREADY SEARCH ON LOCAL STORAGE: boost next redenr speed
     function searchProfessorByRMP(professorName, changeHerfElement) {
-        console.log('invoke searchProfessorByRMP');
-        console.log('searchProfessorByRMP, professorName ', professorName);
-        console.log('searchProfessorByRMP, changeHerfElement ', changeHerfElement);
+        console.debug('invoke searchProfessorByRMP');
+        console.debug('searchProfessorByRMP, professorName ', professorName);
+        console.debug('searchProfessorByRMP, changeHerfElement ', changeHerfElement);
 
         let localStorageProfessorPropertyJSON = localStorage.getItem(professorName);
-        console.log('searchProfessorByRMP, localStorageProfessorPropertyJSON ', localStorageProfessorPropertyJSON);
+        console.debug('searchProfessorByRMP, localStorageProfessorPropertyJSON ', localStorageProfessorPropertyJSON);
         if (localStorageProfessorPropertyJSON) {
-            log('searchProfessorByRMP, nice, found the data from localStorage, not invoke from third-party!');
+            console.debug('searchProfessorByRMP, nice, found the data from localStorage, not invoke from third-party!');
             let localStorageProfessorProperty = JSON.parse(localStorageProfessorPropertyJSON);
-            console.log('searchProfessorByRMP, localStorageProfessorProperty ', localStorageProfessorProperty);
+            console.debug('searchProfessorByRMP, localStorageProfessorProperty ', localStorageProfessorProperty);
             let url = getProfessorsURL(localStorageProfessorProperty.legacyId);
             setInstructorElement(professorName, changeHerfElement, url);
             // add data
             let id = localStorageProfessorProperty.id;
-            console.log('searchProfessorByRMP, id ', id);
+            console.debug('searchProfessorByRMP, id ', id);
             let localStorageProfessorDetailJSON = localStorage.getItem(id);
-            console.log('searchProfessorByRMP, localStorageProfessorDetailJSON ', localStorageProfessorDetailJSON);
+            console.debug('searchProfessorByRMP, localStorageProfessorDetailJSON ', localStorageProfessorDetailJSON);
             let localStorageProfessorDetail = JSON.parse(localStorageProfessorDetailJSON);
-            console.log('searchProfessorByRMP, localStorageProfessorDetail ', localStorageProfessorDetail);
+            console.debug('searchProfessorByRMP, localStorageProfessorDetail ', localStorageProfessorDetail);
             let avgRating = localStorageProfessorDetail.data.node.avgRating;
-            console.log('searchProfessorByRMP, avgRating ', avgRating);
+            console.debug('searchProfessorByRMP, avgRating ', avgRating);
             let numRatings = localStorageProfessorDetail.data.node.numRatings;
-            console.log('searchProfessorByRMP, numRatings ', numRatings);
+            console.debug('searchProfessorByRMP, numRatings ', numRatings);
             setInstructorElement(professorName, changeHerfElement, url, getProfessRateShowFormat(avgRating, numRatings));
             return;
         }
         let requetURL = getRMPSearchProfessorAPI();
-        console.log('searchProfessorByRMP, requetURL ', requetURL);
+        console.debug('searchProfessorByRMP, requetURL ', requetURL);
         let requestData = buildRMPSearchProfessorQuery(professorName);
-        console.log('searchProfessorByRMP, requestData ', requestData);
+        console.debug('searchProfessorByRMP, requestData ', requestData);
         GM_xmlhttpRequest({
             method: "POST",
             url: requetURL,
@@ -352,42 +341,42 @@
             },
             data: requestData,
             onload: function (response) {
-                console.log('searchProfessorByRMP, response ', response);
+                console.debug('searchProfessorByRMP, response ', response);
                 let jsonText = response.responseText;
-                console.log('searchProfessorByRMP, jsonText ', jsonText);
+                console.debug('searchProfessorByRMP, jsonText ', jsonText);
                 let dataObj = JSON.parse(jsonText);
-                console.log('searchProfessorByRMP, dataObj ', dataObj);
+                console.debug('searchProfessorByRMP, dataObj ', dataObj);
                 let teachers = dataObj.data.newSearch.teachers.edges;
-                console.log('searchProfessorByRMP, teachers ', teachers);
+                console.debug('searchProfessorByRMP, teachers ', teachers);
 
                 // TODO: when return multi teachers, the result show on the page is not always correct!
                 let teacher = teachers[0];
-                console.log('searchProfessorByRMP, teacher ', teacher);
+                console.debug('searchProfessorByRMP, teacher ', teacher);
                 // cannot search any info for the teacher in RMP
                 if (!teacher) {
-                    log('searchProfessorByRMP, cannot search any info for the teacher in RMP');
+                    console.debug('searchProfessorByRMP, cannot search any info for the teacher in RMP');
                     return;
                 }
                 let teacherProperty = teacher.node;
-                console.log('searchProfessorByRMP, teacherProperty ', teacherProperty);
+                console.debug('searchProfessorByRMP, teacherProperty ', teacherProperty);
                 // legacyId: 2445727
                 let legacyId = teacherProperty.legacyId;
-                console.log('searchProfessorByRMP, legacyId ', legacyId);
+                console.debug('searchProfessorByRMP, legacyId ', legacyId);
                 // department: "Computer amp Informational Tech."
                 let department = teacherProperty.department;
-                console.log('searchProfessorByRMP, department ', department);
+                console.debug('searchProfessorByRMP, department ', department);
                 // firstName: "Jonathan"
                 let firstName = teacherProperty.firstName;
-                console.log('searchProfessorByRMP, firstName ', firstName);
+                console.debug('searchProfessorByRMP, firstName ', firstName);
                 // lastName: "Potter"
                 let lastName = teacherProperty.lastName;
-                console.log('searchProfessorByRMP, lastName ', lastName);
+                console.debug('searchProfessorByRMP, lastName ', lastName);
                 // id: "VGVhY2hlci0yNDQ1NzI3"
                 let id = teacherProperty.id;
-                console.log('searchProfessorByRMP, id ', id);
+                console.debug('searchProfessorByRMP, id ', id);
 
                 let professionPageURL = getProfessorsURL(legacyId);
-                console.log('searchProfessorByRMP, professionPageURL ', professionPageURL);
+                console.debug('searchProfessorByRMP, professionPageURL ', professionPageURL);
 
                 localStorage.setItem(professorName, JSON.stringify(teacherProperty));
 
@@ -406,28 +395,28 @@
                     },
                     data: searchProfessorDetailData,
                     onload: function (response) {
-                        console.log('searchProfessorByRMP, professorDetail, response ', response);
+                        console.debug('searchProfessorByRMP, professorDetail, response ', response);
                         let jsonText = response.responseText;
-                        console.log('searchProfessorByRMP, professorDetail, jsonText ', jsonText);
+                        console.debug('searchProfessorByRMP, professorDetail, jsonText ', jsonText);
                         let dataObj = JSON.parse(jsonText);
-                        console.log('searchProfessorByRMP, professorDetail, dataObj ', dataObj);
+                        console.debug('searchProfessorByRMP, professorDetail, dataObj ', dataObj);
                         let professorDetail = dataObj.data.node;
-                        console.log('searchProfessorByRMP, professorDetail ', professorDetail);
+                        console.debug('searchProfessorByRMP, professorDetail ', professorDetail);
 
                         if (!professorDetail) {
-                            log('searchProfessorByRMP, professorDetail is null ', professorDetail);
+                            console.debug('searchProfessorByRMP, professorDetail is null ', professorDetail);
                             return;
                         }
 
                         // avgRating: 2.3
                         let avgRating = professorDetail.avgRating;
-                        log('searchProfessorByRMP, professorDetail, avgRating', avgRating);
+                        console.debug('searchProfessorByRMP, professorDetail, avgRating', avgRating);
                         // avgDifficulty: 2
                         let avgDifficulty = professorDetail.avgDifficulty;
-                        log('searchProfessorByRMP, professorDetail, avgDifficulty', avgDifficulty);
+                        console.debug('searchProfessorByRMP, professorDetail, avgDifficulty', avgDifficulty);
                         // numRatings: 4
                         let numRatings = professorDetail.numRatings;
-                        log('searchProfessorByRMP, professorDetail, numRatings', numRatings);
+                        console.debug('searchProfessorByRMP, professorDetail, numRatings', numRatings);
 
                         localStorage.setItem(id, jsonText);
 
@@ -445,13 +434,13 @@
 
     // ---------------------- Schedule Planner function begin ----------------------
     function getScheduleByCRN(crn) {
-        log('getScheduleByCRN, crn ' + crn);
+        console.debug('getScheduleByCRN, crn ' + crn);
         let scheduleJSONData = localStorage.getItem('generate-request');
-        log('getScheduleByCRN, scheduleJSONData ' + scheduleJSONData);
+        console.debug('getScheduleByCRN, scheduleJSONData ' + scheduleJSONData);
         let scheduleData = JSON.parse(scheduleJSONData);
         let scheduleDataSections = scheduleData.sections;
         for (let scheduleDataSection of scheduleDataSections) {
-            log('getScheduleByCRN, scheduleDataSection ', scheduleDataSection);
+            console.debug('getScheduleByCRN, scheduleDataSection ', scheduleDataSection);
             if (scheduleDataSection.id === crn) {
                 return scheduleDataSection;
             }
@@ -461,7 +450,7 @@
 
     // ====================== global functions end ======================
 
-    //
+    // TODO the format is not correctly displayed, when print out to console, the format will messy, emmm...
     console.log(`
     ____ ____ ____  _____ ____  ____  _   _ 
     / ___/ ___/ ___||  ___/ ___||  _ \| | | |
@@ -476,7 +465,7 @@ Any question, report, feedback contact us at: ccsfsph@gmail.com
     console.log('load CCSFSPH success!');
 
     window.onload = function () {
-        console.log("window.onload()");
+        console.debug("window.onload()");
 
         g_pageLoadFinish = true;
         // TODO open the page, may be not render finish, it will cause cannot find the element, emmm....
@@ -487,108 +476,108 @@ Any question, report, feedback contact us at: ccsfsph@gmail.com
     // plus, click the `generate` button to change href address is not working as well (I am also curious why?)
     // This method can work, but low efficiency (sam left).
     setInterval(function () {
-        log("page detector works! invoke for every " + pageRefreshInterval + " ms");
+        console.debug("page detector works! invoke for every " + pageRefreshInterval + " ms");
         if (g_pageLoadFinish) {
-            console.log("page load finish, begin to render page");
+            console.debug("page load finish, begin to render page");
             updateUserSwitchPotentialSchedulePage();
             let flag = (!g_isFirstLoadSuccess && (PAGE === PAGE_POTENTIAL_SCHEDULE || PAGE === PAGE_CURRENT_SCHEDULE));
-            console.log("g_pageLoadFinish, flag, ", flag);
+            console.debug("g_pageLoadFinish, flag, ", flag);
             if (!g_isUpdateLocationChangeFinish || flag) {
                 handleSchedulePlannerPage();
             }
         } else {
-            console.log("page not load finish, waiting for next time invoke");
+            console.debug("page not load finish, waiting for next time invoke");
         }
     }, pageRefreshInterval);
 
     function showCurrentSchedule(tHeadElement, instructorRowIndex) {
-        console.log('showCurrentSchedule, tHeadElement ', tHeadElement);
-        console.log('showCurrentSchedule, instructorRowIndex ', instructorRowIndex);
+        console.debug('showCurrentSchedule, tHeadElement ', tHeadElement);
+        console.debug('showCurrentSchedule, instructorRowIndex ', instructorRowIndex);
         // now, let us get the real name for each row
         for (let tHeadElementRow of tHeadElement.rows) {
-            console.log(tHeadElementRow);
+            console.debug(tHeadElementRow);
         }
 
         let tableElements = tHeadElement.parentElement;
-        console.log('showCurrentSchedule, tableElements ', tableElements);
+        console.debug('showCurrentSchedule, tableElements ', tableElements);
         let tableBodyElements = tableElements.getElementsByTagName('tbody');
-        console.log('showCurrentSchedule, tableBodyElements ', tableBodyElements);
+        console.debug('showCurrentSchedule, tableBodyElements ', tableBodyElements);
         let instructorName;
 
         // add column first
         // Actually, we should use the loop above. But i'm tired now... just copy it from showPotentialSchedule
         let tableHeadthRows = tHeadElement.rows[0];
-        log('showPotentialSchedule, tableHeadthRows', tableHeadthRows);
+        console.debug('showPotentialSchedule, tableHeadthRows', tableHeadthRows);
         let tableHeadColumnindex = -1;
         let instructorIndex = -1;
         let tableHeadthRowsThElements = tableHeadthRows.getElementsByTagName('th');
         let tableHeadTotalCell = tableHeadthRowsThElements.length;
-        log('showPotentialScheduleSwitchPage, tableHeadTotalCell ', tableHeadTotalCell);
+        console.debug('showPotentialScheduleSwitchPage, tableHeadTotalCell ', tableHeadTotalCell);
         for (let tableHeadthRow of tableHeadthRowsThElements) {
             tableHeadColumnindex++;
-            log('showPotentialSchedule, tableHeadColumnindex', tableHeadColumnindex);
-            log('showPotentialSchedule, tableHeadthRow', tableHeadthRow);
+            console.debug('showPotentialSchedule, tableHeadColumnindex', tableHeadColumnindex);
+            console.debug('showPotentialSchedule, tableHeadthRow', tableHeadthRow);
             // display order: Seats Capacity、Seats Open、Seats Filled
             // first, add 'Seats Capacity' before 'Seats Open'
             if (tableHeadthRow.innerText === 'Instructor') {
                 instructorIndex = tableHeadColumnindex;
             }
         }
-        log('showPotentialSchedule, instructorIndex', instructorIndex);
+        console.debug('showPotentialSchedule, instructorIndex', instructorIndex);
 
         tableHeadTotalCell += 1;
         // Add after `Instructor` column
         let emailCapacityCell = tableHeadthRows.insertCell(instructorIndex + 1);
-        log('showPotentialSchedule, emailCapacityCell', emailCapacityCell);
+        console.debug('showPotentialSchedule, emailCapacityCell', emailCapacityCell);
         emailCapacityCell.innerText = 'Instructor Email';
         g_instructorEmailColumnIndex = emailCapacityCell.cellIndex;
         g_tableHeadTotalCell = tableHeadTotalCell;
         g_instructorColumnIndex = instructorIndex;
-        console.log("showPotentialSchedule, g_tableHeadTotalCell, ", g_tableHeadTotalCell);
-        console.log("showPotentialSchedule, g_instructorEmailColumnIndex, ", g_instructorEmailColumnIndex);
+        console.debug("showPotentialSchedule, g_tableHeadTotalCell, ", g_tableHeadTotalCell);
+        console.debug("showPotentialSchedule, g_instructorEmailColumnIndex, ", g_instructorEmailColumnIndex);
         // add instructor email here
         instructorEmailCellAddData(tHeadElement);
 
         for (let tableBodyElement of tableBodyElements) {
-            console.log('showCurrentSchedule, tableBodyElement ', tableBodyElement);
+            console.debug('showCurrentSchedule, tableBodyElement ', tableBodyElement);
             let tableBodyElementTrs = tableBodyElement.getElementsByTagName('tr');
-            console.log('showCurrentSchedule, tableBodyElementTrs ', tableBodyElementTrs);
+            console.debug('showCurrentSchedule, tableBodyElementTrs ', tableBodyElementTrs);
             // get the first only, contain the table head data
             let tableBodyElementTr = tableBodyElementTrs[0];
-            console.log('showCurrentSchedule, tableBodyElementTr ', tableBodyElementTr);
+            console.debug('showCurrentSchedule, tableBodyElementTr ', tableBodyElementTr);
             let tableBodyElementTrTd = tableBodyElementTr.getElementsByTagName('td');
-            console.log('showCurrentSchedule, tableBodyElementTrTd ', tableBodyElementTrTd)
+            console.debug('showCurrentSchedule, tableBodyElementTrTd ', tableBodyElementTrTd)
             let instrctorNameElement = tableBodyElementTrTd[instructorRowIndex];
-            console.log('showCurrentSchedule, instrctorNameElement ', instrctorNameElement);
+            console.debug('showCurrentSchedule, instrctorNameElement ', instrctorNameElement);
             let instrctorNameElementSpans = instrctorNameElement.getElementsByTagName('span');
-            console.log('showCurrentSchedule, instrctorNameElementSpans ', instrctorNameElementSpans);
+            console.debug('showCurrentSchedule, instrctorNameElementSpans ', instrctorNameElementSpans);
             let instrctorNameElementSpan = instrctorNameElementSpans[0];
-            console.log('showCurrentSchedule, instrctorNameElementSpan ', instrctorNameElementSpan);
+            console.debug('showCurrentSchedule, instrctorNameElementSpan ', instrctorNameElementSpan);
             if (!instrctorNameElementSpan) {
-                console.log('showCurrentSchedule, skip, !instrctorNameElementSpan ', instrctorNameElementSpan);
+                console.debug('showCurrentSchedule, skip, !instrctorNameElementSpan ', instrctorNameElementSpan);
                 continue;
             }
             instructorName = instrctorNameElementSpan.innerText;
-            console.log('showCurrentSchedule, instructorName', instructorName);
+            console.debug('showCurrentSchedule, instructorName', instructorName);
             searchProfessorByRMP(instructorName, instrctorNameElementSpan);
         }
     }
 
     function showPotentialSchedule(tHeadElement, instructorRowIndex) {
-        console.log('showPotentialSchedule, tHeadElement ', tHeadElement);
-        console.log('showPotentialSchedule, instructorRowIndex ', instructorRowIndex);
+        console.debug('showPotentialSchedule, tHeadElement ', tHeadElement);
+        console.debug('showPotentialSchedule, instructorRowIndex ', instructorRowIndex);
         let tableHeadthRows = tHeadElement.rows[0];
-        log('showPotentialSchedule, tableHeadthRows', tableHeadthRows);
+        console.debug('showPotentialSchedule, tableHeadthRows', tableHeadthRows);
         let tableHeadColumnindex = -1;
         let seatsOpenIndex = -1;
         let crnIndex = -1;
         let tableHeadthRowsThElements = tableHeadthRows.getElementsByTagName('th');
         let tableHeadTotalCell = tableHeadthRowsThElements.length;
-        log('showPotentialScheduleSwitchPage, tableHeadTotalCell ', tableHeadTotalCell);
+        console.debug('showPotentialScheduleSwitchPage, tableHeadTotalCell ', tableHeadTotalCell);
         for (let tableHeadthRow of tableHeadthRowsThElements) {
             tableHeadColumnindex++;
-            log('showPotentialSchedule, tableHeadColumnindex', tableHeadColumnindex);
-            log('showPotentialSchedule, tableHeadthRow', tableHeadthRow);
+            console.debug('showPotentialSchedule, tableHeadColumnindex', tableHeadColumnindex);
+            console.debug('showPotentialSchedule, tableHeadthRow', tableHeadthRow);
             // display order: Seats Capacity、Seats Open、Seats Filled
             // first, add 'Seats Capacity' before 'Seats Open'
             if (tableHeadthRow.innerText === 'Seats Open') {
@@ -598,21 +587,21 @@ Any question, report, feedback contact us at: ccsfsph@gmail.com
                 crnIndex = tableHeadColumnindex;
             }
         }
-        log('showPotentialSchedule, seatsOpenIndex', seatsOpenIndex);
+        console.debug('showPotentialSchedule, seatsOpenIndex', seatsOpenIndex);
 
         tableHeadTotalCell += 1;
         let seatsCapacityCell = tableHeadthRows.insertCell(seatsOpenIndex);
-        log('showPotentialSchedule, seatsCapacityCell', seatsCapacityCell);
+        console.debug('showPotentialSchedule, seatsCapacityCell', seatsCapacityCell);
         seatsCapacityCell.innerText = 'Seats Capacity';
         g_seatsCapacityColumnIndex = seatsCapacityCell.cellIndex;
-        console.log("showPotentialSchedule, g_seatsCapacityColumnIndex, ", g_seatsCapacityColumnIndex);
+        console.debug("showPotentialSchedule, g_seatsCapacityColumnIndex, ", g_seatsCapacityColumnIndex);
 
         tableHeadTotalCell += 1;
         let instructorCell = tableHeadthRows.insertCell(seatsOpenIndex);
-        log('showPotentialSchedule, instructorCell', instructorCell);
+        console.debug('showPotentialSchedule, instructorCell', instructorCell);
         instructorCell.innerText = 'Instructor';
         g_instructorColumnIndex = instructorCell.cellIndex;
-        console.log("showPotentialSchedule, g_instructorColumnIndex, ", g_instructorColumnIndex);
+        console.debug("showPotentialSchedule, g_instructorColumnIndex, ", g_instructorColumnIndex);
 
         g_tableHeadTotalCell = tableHeadTotalCell;
         g_tableHeadCrnIndex = crnIndex;
@@ -626,43 +615,43 @@ Any question, report, feedback contact us at: ccsfsph@gmail.com
         let instructorEmailColumnIndex = g_instructorEmailColumnIndex
         // begin to add the data
         let tableElement = tHeadElement.parentElement;
-        log('showPotentialSchedule, tableElement ', tableElement);
+        console.debug('showPotentialSchedule, tableElement ', tableElement);
         let tableElementBodyElements = tableElement.getElementsByTagName('tbody');
-        log('showPotentialSchedule, tableElementBodyElements ', tableElementBodyElements);
+        console.debug('showPotentialSchedule, tableElementBodyElements ', tableElementBodyElements);
         for (let tableElementBodyElement of tableElementBodyElements) {
-            log('showPotentialSchedule, tableElementBodyElement ', tableElementBodyElement);
+            console.debug('showPotentialSchedule, tableElementBodyElement ', tableElementBodyElement);
             // add cell data
             let tableElementBodyElementTrElement = tableElementBodyElement.getElementsByTagName('tr')[0];
-            log('showPotentialSchedule, tableElementBodyElementTrElement ', tableElementBodyElementTrElement);
+            console.debug('showPotentialSchedule, tableElementBodyElementTrElement ', tableElementBodyElementTrElement);
             let tableElementBodyElementTrElementCells = tableElementBodyElementTrElement.cells;
-            log('showPotentialSchedule, tableElementBodyElementTrElementCells, ', tableElementBodyElementTrElementCells);
+            console.debug('showPotentialSchedule, tableElementBodyElementTrElementCells, ', tableElementBodyElementTrElementCells);
             let tableElementBodyElementTrElementCellsTotalCell = tableElementBodyElementTrElementCells.length;
-            log('showPotentialSchedule, tableElementBodyElementTrElementCellsTotalCell, ', tableElementBodyElementTrElementCellsTotalCell);
+            console.debug('showPotentialSchedule, tableElementBodyElementTrElementCellsTotalCell, ', tableElementBodyElementTrElementCellsTotalCell);
             if (tableElementBodyElementTrElementCellsTotalCell === tableHeadTotalCell) {
-                log('showPotentialSchedule, skip this body, no change');
+                console.debug('showPotentialSchedule, skip this body, no change');
                 continue;
             }
 
             let instructorColumnCell = tableElementBodyElementTrElementCells[g_instructorColumnIndex];
-            log('instructorColumnCell, ', instructorColumnCell);
+            console.debug('instructorColumnCell, ', instructorColumnCell);
             let instructorName = instructorColumnCell.innerText;
-            log('instructorName, ', instructorName);
+            console.debug('instructorName, ', instructorName);
 
             let instructorEmailCellValueElement = tableElementBodyElementTrElement.insertCell(instructorEmailColumnIndex);
-            log('showPotentialSchedule, instructorEmailCellValueElement ', instructorEmailCellValueElement);
-            log('1111111');
+            console.debug('showPotentialSchedule, instructorEmailCellValueElement ', instructorEmailCellValueElement);
+            console.debug('1111111');
             instructorEmailCellValueElement.innerText = '1221@ccsf.edu';
 
             getCCSFTeacherInfo(instructorName, instructorEmailCellValueElement);
 
             // expand the cell for table body
             let tableElementBodyElementTdElements = tableElementBodyElement.getElementsByTagName('td');
-            log('showPotentialSchedule, tableElementBodyElementTdElements ', tableElementBodyElementTdElements);
+            console.debug('showPotentialSchedule, tableElementBodyElementTdElements ', tableElementBodyElementTdElements);
             for (let tableElementBodyElementTdElement of tableElementBodyElementTdElements) {
-                log('showPotentialSchedule, tableElementBodyElementTdElement ', tableElementBodyElementTdElement);
+                console.debug('showPotentialSchedule, tableElementBodyElementTdElement ', tableElementBodyElementTdElement);
                 let tableElementBodyElementTdElementAttribute = tableElementBodyElementTdElement.getAttribute('colspan');
                 if (tableElementBodyElementTdElementAttribute) {
-                    log('showPotentialSchedule, tableElementBodyElementTdElementAttribute ', tableElementBodyElementTdElementAttribute);
+                    console.debug('showPotentialSchedule, tableElementBodyElementTdElementAttribute ', tableElementBodyElementTdElementAttribute);
                     tableElementBodyElementTdElement.setAttribute('colspan', tableHeadTotalCell);
                 }
             }
@@ -670,16 +659,16 @@ Any question, report, feedback contact us at: ccsfsph@gmail.com
 
         // expand the body foot cell colspan
         let tableElementFootElements = tableElement.getElementsByTagName('tfoot');
-        log('showPotentialSchedule, tableElementFootElements ', tableElementFootElements);
+        console.debug('showPotentialSchedule, tableElementFootElements ', tableElementFootElements);
         for (let tableElementFootElement of tableElementFootElements) {
-            log('showPotentialSchedule, tableElementFootElement ', tableElementFootElement);
+            console.debug('showPotentialSchedule, tableElementFootElement ', tableElementFootElement);
             let tableElementFootElementTdElements = tableElementFootElement.getElementsByTagName('td');
-            log('showPotentialSchedule, tableElementFootElementTdElements ', tableElementFootElementTdElements);
+            console.debug('showPotentialSchedule, tableElementFootElementTdElements ', tableElementFootElementTdElements);
             for (let tableElementFootElementTdElement of tableElementFootElementTdElements) {
-                log('showPotentialSchedule, tableElementFootElementTdElement ', tableElementFootElementTdElement);
+                console.debug('showPotentialSchedule, tableElementFootElementTdElement ', tableElementFootElementTdElement);
                 let tableElementFootElementTdElementAttribute = tableElementFootElementTdElement.getAttribute('colspan');
                 if (tableElementFootElementTdElementAttribute) {
-                    log('showPotentialSchedule, tableElementFootElementTdElementAttribute ', tableElementFootElementTdElementAttribute);
+                    console.debug('showPotentialSchedule, tableElementFootElementTdElementAttribute ', tableElementFootElementTdElementAttribute);
                     // because the show num is not in the last column, that's why need to -1
                     tableElementFootElementTdElement.setAttribute('colspan', tableHeadTotalCell - 1);
                 }
@@ -694,49 +683,49 @@ Any question, report, feedback contact us at: ccsfsph@gmail.com
         let seatsOpenIndex = g_tableHeadSeatsOpenIndex;
         // begin to add the data
         let tableElement = tHeadElement.parentElement;
-        log('showPotentialSchedule, tableElement ', tableElement);
+        console.debug('showPotentialSchedule, tableElement ', tableElement);
         let tableElementBodyElements = tableElement.getElementsByTagName('tbody');
-        log('showPotentialSchedule, tableElementBodyElements ', tableElementBodyElements);
+        console.debug('showPotentialSchedule, tableElementBodyElements ', tableElementBodyElements);
         for (let tableElementBodyElement of tableElementBodyElements) {
-            log('showPotentialSchedule, tableElementBodyElement ', tableElementBodyElement);
+            console.debug('showPotentialSchedule, tableElementBodyElement ', tableElementBodyElement);
             // add cell data
             let tableElementBodyElementTrElement = tableElementBodyElement.getElementsByTagName('tr')[0];
-            log('showPotentialSchedule, tableElementBodyElementTrElement ', tableElementBodyElementTrElement);
+            console.debug('showPotentialSchedule, tableElementBodyElementTrElement ', tableElementBodyElementTrElement);
             let tableElementBodyElementTrElementCells = tableElementBodyElementTrElement.cells;
-            log('showPotentialSchedule, tableElementBodyElementTrElementCells, ', tableElementBodyElementTrElementCells);
+            console.debug('showPotentialSchedule, tableElementBodyElementTrElementCells, ', tableElementBodyElementTrElementCells);
             let tableElementBodyElementTrElementCellsTotalCell = tableElementBodyElementTrElementCells.length;
-            log('showPotentialSchedule, tableElementBodyElementTrElementCellsTotalCell, ', tableElementBodyElementTrElementCellsTotalCell);
+            console.debug('showPotentialSchedule, tableElementBodyElementTrElementCellsTotalCell, ', tableElementBodyElementTrElementCellsTotalCell);
             if (tableElementBodyElementTrElementCellsTotalCell === tableHeadTotalCell) {
-                log('showPotentialSchedule, skip this body, no change');
+                console.debug('showPotentialSchedule, skip this body, no change');
                 continue;
             }
             let crn = '';
             let crnCell = tableElementBodyElementTrElementCells[crnIndex];
-            log('showPotentialSchedule, crnCell ', crnCell);
+            console.debug('showPotentialSchedule, crnCell ', crnCell);
             crn = crnCell.innerText;
-            log('showPotentialSchedule, crn ', crn);
+            console.debug('showPotentialSchedule, crn ', crn);
 
             let seatsCapacityCellValueElement = tableElementBodyElementTrElement.insertCell(seatsOpenIndex);
-            log('showPotentialSchedule, seatsCapacityCellValueElement ', seatsCapacityCellValueElement);
+            console.debug('showPotentialSchedule, seatsCapacityCellValueElement ', seatsCapacityCellValueElement);
             seatsCapacityCellValueElement.innerText = getScheduleByCRN(crn).seatsCapacity;
 
             let instructorCellValueElement = tableElementBodyElementTrElement.insertCell(seatsOpenIndex);
-            log('showPotentialSchedule, instructorCellValueElement ', instructorCellValueElement);
+            console.debug('showPotentialSchedule, instructorCellValueElement ', instructorCellValueElement);
             // I think we have better to get the instructor name from the ! 'show questions detail' button, but it doesn't matter. since that data get from api as well
             // and instructor may have multi one, use this to keep it normal
             let instructorName = getScheduleByCRN(crn).instructor[0].name;
-            log('showPotentialSchedule, instructorName', instructorName);
+            console.debug('showPotentialSchedule, instructorName', instructorName);
             instructorCellValueElement.innerText = instructorName;
             searchProfessorByRMP(instructorName, instructorCellValueElement);
 
             // expand the cell for table body
             let tableElementBodyElementTdElements = tableElementBodyElement.getElementsByTagName('td');
-            log('showPotentialSchedule, tableElementBodyElementTdElements ', tableElementBodyElementTdElements);
+            console.debug('showPotentialSchedule, tableElementBodyElementTdElements ', tableElementBodyElementTdElements);
             for (let tableElementBodyElementTdElement of tableElementBodyElementTdElements) {
-                log('showPotentialSchedule, tableElementBodyElementTdElement ', tableElementBodyElementTdElement);
+                console.debug('showPotentialSchedule, tableElementBodyElementTdElement ', tableElementBodyElementTdElement);
                 let tableElementBodyElementTdElementAttribute = tableElementBodyElementTdElement.getAttribute('colspan');
                 if (tableElementBodyElementTdElementAttribute) {
-                    log('showPotentialSchedule, tableElementBodyElementTdElementAttribute ', tableElementBodyElementTdElementAttribute);
+                    console.debug('showPotentialSchedule, tableElementBodyElementTdElementAttribute ', tableElementBodyElementTdElementAttribute);
                     tableElementBodyElementTdElement.setAttribute('colspan', tableHeadTotalCell);
                 }
             }
@@ -744,16 +733,16 @@ Any question, report, feedback contact us at: ccsfsph@gmail.com
 
         // expand the body foot cell colspan
         let tableElementFootElements = tableElement.getElementsByTagName('tfoot');
-        log('showPotentialSchedule, tableElementFootElements ', tableElementFootElements);
+        console.debug('showPotentialSchedule, tableElementFootElements ', tableElementFootElements);
         for (let tableElementFootElement of tableElementFootElements) {
-            log('showPotentialSchedule, tableElementFootElement ', tableElementFootElement);
+            console.debug('showPotentialSchedule, tableElementFootElement ', tableElementFootElement);
             let tableElementFootElementTdElements = tableElementFootElement.getElementsByTagName('td');
-            log('showPotentialSchedule, tableElementFootElementTdElements ', tableElementFootElementTdElements);
+            console.debug('showPotentialSchedule, tableElementFootElementTdElements ', tableElementFootElementTdElements);
             for (let tableElementFootElementTdElement of tableElementFootElementTdElements) {
-                log('showPotentialSchedule, tableElementFootElementTdElement ', tableElementFootElementTdElement);
+                console.debug('showPotentialSchedule, tableElementFootElementTdElement ', tableElementFootElementTdElement);
                 let tableElementFootElementTdElementAttribute = tableElementFootElementTdElement.getAttribute('colspan');
                 if (tableElementFootElementTdElementAttribute) {
-                    log('showPotentialSchedule, tableElementFootElementTdElementAttribute ', tableElementFootElementTdElementAttribute);
+                    console.debug('showPotentialSchedule, tableElementFootElementTdElementAttribute ', tableElementFootElementTdElementAttribute);
                     // because the show num is not in the last column, that's why need to -1
                     tableElementFootElementTdElement.setAttribute('colspan', tableHeadTotalCell - 1);
                 }
@@ -763,11 +752,11 @@ Any question, report, feedback contact us at: ccsfsph@gmail.com
 
     // in potential schedule, user switch to differnt schedule
     function showPotentialScheduleSwitchPage(tHeadElement, instructorRowIndex) {
-        console.log('showPotentialScheduleSwitchPage, tHeadElement ', tHeadElement);
-        console.log('showPotentialScheduleSwitchPage, instructorRowIndex ', instructorRowIndex);
+        console.debug('showPotentialScheduleSwitchPage, tHeadElement ', tHeadElement);
+        console.debug('showPotentialScheduleSwitchPage, instructorRowIndex ', instructorRowIndex);
         // the table head will not change, only change the differnt course!
         let tableHeadthRows = tHeadElement.rows[0];
-        log('showPotentialSchedule, tableHeadthRows', tableHeadthRows);
+        console.debug('showPotentialSchedule, tableHeadthRows', tableHeadthRows);
     }
 
     function handleSchedulePlannerPage() {
@@ -775,33 +764,33 @@ Any question, report, feedback contact us at: ccsfsph@gmail.com
         // const SCHEDULE_PLANNER_TABLE_HEAD_CLASS_NAME = 'css-ri4373-headerCss';
         let tHeadElements = document.getElementsByClassName(SCHEDULE_PLANNER_TABLE_HEAD_CLASS_NAME);
         if (tHeadElements) {
-            log(" schedule planner page ");
-            console.log('handleSchedulePlannerPage, tHeadElements ', tHeadElements);
+            console.debug(" schedule planner page ");
+            console.debug('handleSchedulePlannerPage, tHeadElements ', tHeadElements);
             // the first row is the table title head
             let tHeadElement = tHeadElements[0];
             if (!tHeadElement) {
-                return log('handleSchedulePlannerPage, no tHeadElement found');
+                return console.debug('handleSchedulePlannerPage, no tHeadElement found');
             }
-            console.log('handleSchedulePlannerPage, tHeadElement ', tHeadElement);
+            console.debug('handleSchedulePlannerPage, tHeadElement ', tHeadElement);
             let tHeadtrElement = tHeadElement.rows[0];
-            log('handleSchedulePlannerPage, tHeadtrElement ', tHeadtrElement);
+            console.debug('handleSchedulePlannerPage, tHeadtrElement ', tHeadtrElement);
             let tHeadtrElementCells = tHeadtrElement.cells;
-            log('handleSchedulePlannerPage, tHeadtrElementCells ', tHeadtrElementCells);
+            console.debug('handleSchedulePlannerPage, tHeadtrElementCells ', tHeadtrElementCells);
             // we should get the column index, and use the index to get the row for each instrutor name
             let instructorRowIndex = -1;
             for (let tHeadtrElementCell of tHeadtrElementCells) {
                 instructorRowIndex++;
-                log('handleSchedulePlannerPage, tHeadtrElementCellIndex ', instructorRowIndex);
-                log('handleSchedulePlannerPage, tHeadtrElementCell ', tHeadtrElementCell);
+                console.debug('handleSchedulePlannerPage, tHeadtrElementCellIndex ', instructorRowIndex);
+                console.debug('handleSchedulePlannerPage, tHeadtrElementCell ', tHeadtrElementCell);
                 // try to find the text 'Instructor' Element
                 let cellText = tHeadtrElementCell.innerText;
-                log('handleSchedulePlannerPage, tHeadtrElementCell, cellText', cellText);
+                console.debug('handleSchedulePlannerPage, tHeadtrElementCell, cellText', cellText);
                 if (cellText === 'Instructor') {
-                    console.log('handleSchedulePlannerPage, tHeadtrElementCell: found the Instructor element', tHeadtrElementCell);
+                    console.debug('handleSchedulePlannerPage, tHeadtrElementCell: found the Instructor element', tHeadtrElementCell);
                     break;
                 }
             }
-            console.log('handleSchedulePlannerPage, instructorRowIndex ' + instructorRowIndex);
+            console.debug('handleSchedulePlannerPage, instructorRowIndex ' + instructorRowIndex);
             g_isFirstLoadSuccess = true;
             // may be we need to change another way to identify whther the column is exist in the table
             // the build scheuled page and enrolled page have different table title head
@@ -810,18 +799,18 @@ Any question, report, feedback contact us at: ccsfsph@gmail.com
             // therefore, we need to get the table head total cell num, and each body num, if one of them is different, we need to invoke it again
             // no found the instructor index, because the last cell is not instrctuor index
             if (instructorRowIndex == tHeadtrElementCells.length - 1) {
-                console.log('handleSchedulePlannerPage, instructorRowIndex not found');
+                console.debug('handleSchedulePlannerPage, instructorRowIndex not found');
                 showPotentialSchedule(tHeadElement, instructorRowIndex);
                 return;
             }
             if (!g_isSwitchSheduleUpdateFinish) {
-                console.log("handleSchedulePlannerPage, g_isSwitchSheduleUpdateFinish ", g_isSwitchSheduleUpdateFinish);
+                console.debug("handleSchedulePlannerPage, g_isSwitchSheduleUpdateFinish ", g_isSwitchSheduleUpdateFinish);
                 potentialSheduleCellAddData(tHeadElement);
                 return;
             }
             showCurrentSchedule(tHeadElement, instructorRowIndex);
         } else {
-            log("not in schedule planner page");
+            console.debug("not in schedule planner page");
         }
     }
 
