@@ -503,38 +503,38 @@
         let instructorName;
 
         // add column first
-                // Actually, we should use the loop above. But i'm tired now... just copy it from showPotentialSchedule
-                let tableHeadthRows = tHeadElement.rows[0];
-                log('showPotentialSchedule, tableHeadthRows', tableHeadthRows);
-                let tableHeadColumnindex = -1;
-                let instructorIndex = -1;
-                let tableHeadthRowsThElements = tableHeadthRows.getElementsByTagName('th');
-                let tableHeadTotalCell = tableHeadthRowsThElements.length;
-                log('showPotentialScheduleSwitchPage, tableHeadTotalCell ', tableHeadTotalCell);
-                for (let tableHeadthRow of tableHeadthRowsThElements) {
-                    tableHeadColumnindex++;
-                    log('showPotentialSchedule, tableHeadColumnindex', tableHeadColumnindex);
-                    log('showPotentialSchedule, tableHeadthRow', tableHeadthRow);
-                    // display order: Seats Capacity、Seats Open、Seats Filled
-                    // first, add 'Seats Capacity' before 'Seats Open'
-                    if (tableHeadthRow.innerText === 'Instructor') {
-                        instructorIndex = tableHeadColumnindex;
-                    }
-                }
-                log('showPotentialSchedule, instructorIndex', instructorIndex);
-        
-                tableHeadTotalCell += 1;
-                // Add after `Instructor` column
-                let emailCapacityCell = tableHeadthRows.insertCell(instructorIndex + 1);
-                log('showPotentialSchedule, emailCapacityCell', emailCapacityCell);
-                emailCapacityCell.innerText = 'Instructor Email';
-                g_instructorEmailColumnIndex = emailCapacityCell.cellIndex;
-                g_tableHeadTotalCell = tableHeadTotalCell;
-                g_instructorColumnIndex = instructorIndex;
-                console.log("showPotentialSchedule, g_tableHeadTotalCell, ", g_tableHeadTotalCell);
-                console.log("showPotentialSchedule, g_instructorEmailColumnIndex, ", g_instructorEmailColumnIndex);
-                    // add instructor email here
-                    instructorEmailCellAddData(tHeadElement);
+        // Actually, we should use the loop above. But i'm tired now... just copy it from showPotentialSchedule
+        let tableHeadthRows = tHeadElement.rows[0];
+        log('showPotentialSchedule, tableHeadthRows', tableHeadthRows);
+        let tableHeadColumnindex = -1;
+        let instructorIndex = -1;
+        let tableHeadthRowsThElements = tableHeadthRows.getElementsByTagName('th');
+        let tableHeadTotalCell = tableHeadthRowsThElements.length;
+        log('showPotentialScheduleSwitchPage, tableHeadTotalCell ', tableHeadTotalCell);
+        for (let tableHeadthRow of tableHeadthRowsThElements) {
+            tableHeadColumnindex++;
+            log('showPotentialSchedule, tableHeadColumnindex', tableHeadColumnindex);
+            log('showPotentialSchedule, tableHeadthRow', tableHeadthRow);
+            // display order: Seats Capacity、Seats Open、Seats Filled
+            // first, add 'Seats Capacity' before 'Seats Open'
+            if (tableHeadthRow.innerText === 'Instructor') {
+                instructorIndex = tableHeadColumnindex;
+            }
+        }
+        log('showPotentialSchedule, instructorIndex', instructorIndex);
+
+        tableHeadTotalCell += 1;
+        // Add after `Instructor` column
+        let emailCapacityCell = tableHeadthRows.insertCell(instructorIndex + 1);
+        log('showPotentialSchedule, emailCapacityCell', emailCapacityCell);
+        emailCapacityCell.innerText = 'Instructor Email';
+        g_instructorEmailColumnIndex = emailCapacityCell.cellIndex;
+        g_tableHeadTotalCell = tableHeadTotalCell;
+        g_instructorColumnIndex = instructorIndex;
+        console.log("showPotentialSchedule, g_tableHeadTotalCell, ", g_tableHeadTotalCell);
+        console.log("showPotentialSchedule, g_instructorEmailColumnIndex, ", g_instructorEmailColumnIndex);
+        // add instructor email here
+        instructorEmailCellAddData(tHeadElement);
 
         for (let tableBodyElement of tableBodyElements) {
             console.log('showCurrentSchedule, tableBodyElement ', tableBodyElement);
