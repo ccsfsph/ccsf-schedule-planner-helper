@@ -89,6 +89,7 @@
 
     var g_instructorColumnIndex = 0;
     var g_seatsCapacityColumnIndex = 0;
+    var g_instructorEmailColumnIndex = 0;
     var g_isUpdateLocationChangeFinish = false;
     var g_isSwitchSheduleUpdateFinish = true;
     var g_tableHeadTotalCell = -1;
@@ -113,6 +114,11 @@
 
     function getRequestURLProtocol() {
         return IS_USE_HTTPS ? 'https://' : 'http://';
+    }
+
+    function getEmailHTML(email) {
+        // <a href="mailto:jpotter@ccsf.edu">jpotter@ccsf.edu</a>
+        return '<a href="mailto:' + email + '">' + email + '</a>';
     }
 
     // whther or not the user change location, return true if the location change, return false if the location doesn't change
@@ -186,7 +192,8 @@
         // however, the API need to get the format like 'constance-conner'
         return getRequestURLProtocol() + 'www.ccsf.edu/directory/' + reverseProfessorName(professorName);
     }
-    function getCCSFTeacherInfo(professorName) {
+
+    function getCCSFTeacherInfo(professorName, professorCellElement) {
         let teacherInfoURL = getCCSFTeacherInfoURL(professorName);
         console.log('getCCSFTeacherInfo, teacherInfoURL ', teacherInfoURL);
         GM_xmlhttpRequest({
@@ -236,6 +243,7 @@
                 let emailRegex = /">(.*)<\/a>/;
                 let email = emailRegex.exec(emailHTMLText2)[1].trim();
                 console.log('getCCSFTeacherInfo, email ', email);
+                professorCellElement.innerHTML = getEmailHTML(email);
             }
         });
     }
@@ -492,6 +500,42 @@
         console.log('showCurrentSchedule, tableElements ', tableElements);
         let tableBodyElements = tableElements.getElementsByTagName('tbody');
         console.log('showCurrentSchedule, tableBodyElements ', tableBodyElements);
+        let instructorName;
+
+        // add column first
+                // Actually, we should use the loop above. But i'm tired now... just copy it from showPotentialSchedule
+                let tableHeadthRows = tHeadElement.rows[0];
+                log('showPotentialSchedule, tableHeadthRows', tableHeadthRows);
+                let tableHeadColumnindex = -1;
+                let instructorIndex = -1;
+                let tableHeadthRowsThElements = tableHeadthRows.getElementsByTagName('th');
+                let tableHeadTotalCell = tableHeadthRowsThElements.length;
+                log('showPotentialScheduleSwitchPage, tableHeadTotalCell ', tableHeadTotalCell);
+                for (let tableHeadthRow of tableHeadthRowsThElements) {
+                    tableHeadColumnindex++;
+                    log('showPotentialSchedule, tableHeadColumnindex', tableHeadColumnindex);
+                    log('showPotentialSchedule, tableHeadthRow', tableHeadthRow);
+                    // display order: Seats Capacity、Seats Open、Seats Filled
+                    // first, add 'Seats Capacity' before 'Seats Open'
+                    if (tableHeadthRow.innerText === 'Instructor') {
+                        instructorIndex = tableHeadColumnindex;
+                    }
+                }
+                log('showPotentialSchedule, instructorIndex', instructorIndex);
+        
+                tableHeadTotalCell += 1;
+                // Add after `Instructor` column
+                let emailCapacityCell = tableHeadthRows.insertCell(instructorIndex + 1);
+                log('showPotentialSchedule, emailCapacityCell', emailCapacityCell);
+                emailCapacityCell.innerText = 'Instructor Email';
+                g_instructorEmailColumnIndex = emailCapacityCell.cellIndex;
+                g_tableHeadTotalCell = tableHeadTotalCell;
+                g_instructorColumnIndex = instructorIndex;
+                console.log("showPotentialSchedule, g_tableHeadTotalCell, ", g_tableHeadTotalCell);
+                console.log("showPotentialSchedule, g_instructorEmailColumnIndex, ", g_instructorEmailColumnIndex);
+                    // add instructor email here
+                    instructorEmailCellAddData(tHeadElement);
+
         for (let tableBodyElement of tableBodyElements) {
             console.log('showCurrentSchedule, tableBodyElement ', tableBodyElement);
             let tableBodyElementTrs = tableBodyElement.getElementsByTagName('tr');
@@ -511,10 +555,9 @@
                 console.log('showCurrentSchedule, skip, !instrctorNameElementSpan ', instrctorNameElementSpan);
                 continue;
             }
-            let instructorName = instrctorNameElementSpan.innerText;
+            instructorName = instrctorNameElementSpan.innerText;
             console.log('showCurrentSchedule, instructorName', instructorName);
             searchProfessorByRMP(instructorName, instrctorNameElementSpan);
-            break;
         }
     }
 
@@ -562,6 +605,73 @@
         g_tableHeadCrnIndex = crnIndex;
         g_tableHeadSeatsOpenIndex = seatsOpenIndex;
         potentialSheduleCellAddData(tHeadElement)
+    }
+
+    function instructorEmailCellAddData(tHeadElement) {
+        g_isSwitchSheduleUpdateFinish = true;
+        let tableHeadTotalCell = g_tableHeadTotalCell;
+        let instructorEmailColumnIndex = g_instructorEmailColumnIndex
+        // begin to add the data
+        let tableElement = tHeadElement.parentElement;
+        log('showPotentialSchedule, tableElement ', tableElement);
+        let tableElementBodyElements = tableElement.getElementsByTagName('tbody');
+        log('showPotentialSchedule, tableElementBodyElements ', tableElementBodyElements);
+        for (let tableElementBodyElement of tableElementBodyElements) {
+            log('showPotentialSchedule, tableElementBodyElement ', tableElementBodyElement);
+            // add cell data
+            let tableElementBodyElementTrElement = tableElementBodyElement.getElementsByTagName('tr')[0];
+            log('showPotentialSchedule, tableElementBodyElementTrElement ', tableElementBodyElementTrElement);
+            let tableElementBodyElementTrElementCells = tableElementBodyElementTrElement.cells;
+            log('showPotentialSchedule, tableElementBodyElementTrElementCells, ', tableElementBodyElementTrElementCells);
+            let tableElementBodyElementTrElementCellsTotalCell = tableElementBodyElementTrElementCells.length;
+            log('showPotentialSchedule, tableElementBodyElementTrElementCellsTotalCell, ', tableElementBodyElementTrElementCellsTotalCell);
+            if (tableElementBodyElementTrElementCellsTotalCell === tableHeadTotalCell) {
+                log('showPotentialSchedule, skip this body, no change');
+                continue;
+            }
+
+            let instructorColumnCell = tableElementBodyElementTrElementCells[g_instructorColumnIndex];
+            log('instructorColumnCell, ', instructorColumnCell);
+            let instructorName = instructorColumnCell.innerText;
+            log('instructorName, ', instructorName);
+
+            let instructorEmailCellValueElement = tableElementBodyElementTrElement.insertCell(instructorEmailColumnIndex);
+            log('showPotentialSchedule, instructorEmailCellValueElement ', instructorEmailCellValueElement);
+            log('1111111');
+            instructorEmailCellValueElement.innerText = '1221@ccsf.edu';
+
+            getCCSFTeacherInfo(instructorName, instructorEmailCellValueElement);
+
+            // expand the cell for table body
+            let tableElementBodyElementTdElements = tableElementBodyElement.getElementsByTagName('td');
+            log('showPotentialSchedule, tableElementBodyElementTdElements ', tableElementBodyElementTdElements);
+            for (let tableElementBodyElementTdElement of tableElementBodyElementTdElements) {
+                log('showPotentialSchedule, tableElementBodyElementTdElement ', tableElementBodyElementTdElement);
+                let tableElementBodyElementTdElementAttribute = tableElementBodyElementTdElement.getAttribute('colspan');
+                if (tableElementBodyElementTdElementAttribute) {
+                    log('showPotentialSchedule, tableElementBodyElementTdElementAttribute ', tableElementBodyElementTdElementAttribute);
+                    tableElementBodyElementTdElement.setAttribute('colspan', tableHeadTotalCell);
+                }
+            }
+        }
+
+        // expand the body foot cell colspan
+        let tableElementFootElements = tableElement.getElementsByTagName('tfoot');
+        log('showPotentialSchedule, tableElementFootElements ', tableElementFootElements);
+        for (let tableElementFootElement of tableElementFootElements) {
+            log('showPotentialSchedule, tableElementFootElement ', tableElementFootElement);
+            let tableElementFootElementTdElements = tableElementFootElement.getElementsByTagName('td');
+            log('showPotentialSchedule, tableElementFootElementTdElements ', tableElementFootElementTdElements);
+            for (let tableElementFootElementTdElement of tableElementFootElementTdElements) {
+                log('showPotentialSchedule, tableElementFootElementTdElement ', tableElementFootElementTdElement);
+                let tableElementFootElementTdElementAttribute = tableElementFootElementTdElement.getAttribute('colspan');
+                if (tableElementFootElementTdElementAttribute) {
+                    log('showPotentialSchedule, tableElementFootElementTdElementAttribute ', tableElementFootElementTdElementAttribute);
+                    // because the show num is not in the last column, that's why need to -1
+                    tableElementFootElementTdElement.setAttribute('colspan', tableHeadTotalCell - 1);
+                }
+            }
+        }
     }
 
     function potentialSheduleCellAddData(tHeadElement) {
