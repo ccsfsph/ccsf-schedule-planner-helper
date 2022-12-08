@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CCSF Schedule Planner Helper
 // @namespace    https://github.com/ccsfsph/ccsf-schedule-planner-helper
-// @version      0.0.3
+// @version      0.0.4
 // @description  This userscript helps student to choose course more convenient
 // @author       ccsfsph
 // @match        *://ccsf.collegescheduler.com/*
@@ -663,7 +663,8 @@
                                              
 Welcome to use CCSFSPH :)
 GitHub: https://github.com/ccsfsph/ccsf-schedule-planner-helper
-Any question, report, feedback contact us at: ccsfsph@gmail.com
+Any question, feedback contact us at: https://github.com/ccsfsph/ccsf-schedule-planner-helper/issues
+You can also contact us at: ccsfsph@gmail.com
 `);
     console.log('load CCSFSPH success!');
 
