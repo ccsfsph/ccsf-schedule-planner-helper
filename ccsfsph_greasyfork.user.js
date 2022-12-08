@@ -586,6 +586,9 @@ Any question, report, feedback contact us at: ccsfsph@gmail.com
             if (tableHeadthRow.innerText === 'CRN #') {
                 crnIndex = tableHeadColumnindex;
             }
+            if (tableHeadthRow.innerText === 'Seats Open') {
+                seatsOpenIndex = tableHeadColumnindex;
+            }
         }
         console.debug('showPotentialSchedule, seatsOpenIndex', seatsOpenIndex);
 
@@ -595,6 +598,14 @@ Any question, report, feedback contact us at: ccsfsph@gmail.com
         seatsCapacityCell.innerText = 'Seats Capacity';
         g_seatsCapacityColumnIndex = seatsCapacityCell.cellIndex;
         console.debug("showPotentialSchedule, g_seatsCapacityColumnIndex, ", g_seatsCapacityColumnIndex);
+
+        tableHeadTotalCell += 1;
+        // add after `Instructor`
+        let instructorEmailCell = tableHeadthRows.insertCell(seatsOpenIndex);
+        console.debug('showPotentialSchedule, instructorEmailCell ', instructorEmailCell);
+        instructorEmailCell.innerText = 'Instructor Email';
+        g_instructorEmailColumnIndex = instructorEmailCell.cellIndex;
+        console.debug("showPotentialSchedule, g_instructorEmailColumnIndex ", g_instructorEmailColumnIndex);
 
         tableHeadTotalCell += 1;
         let instructorCell = tableHeadthRows.insertCell(seatsOpenIndex);
@@ -681,6 +692,7 @@ Any question, report, feedback contact us at: ccsfsph@gmail.com
         let tableHeadTotalCell = g_tableHeadTotalCell;
         let crnIndex = g_tableHeadCrnIndex;
         let seatsOpenIndex = g_tableHeadSeatsOpenIndex;
+        let instructorEmailColumnIndex = g_instructorEmailColumnIndex;
         // begin to add the data
         let tableElement = tHeadElement.parentElement;
         console.debug('showPotentialSchedule, tableElement ', tableElement);
@@ -709,6 +721,10 @@ Any question, report, feedback contact us at: ccsfsph@gmail.com
             console.debug('showPotentialSchedule, seatsCapacityCellValueElement ', seatsCapacityCellValueElement);
             seatsCapacityCellValueElement.innerText = getScheduleByCRN(crn).seatsCapacity;
 
+            let instructorEmailCellValueElement = tableElementBodyElementTrElement.insertCell(seatsOpenIndex);
+            console.debug('showPotentialSchedule, instructorEmailCellValueElement ', instructorEmailCellValueElement);
+            instructorEmailCellValueElement.innerText = 'aa';
+
             let instructorCellValueElement = tableElementBodyElementTrElement.insertCell(seatsOpenIndex);
             console.debug('showPotentialSchedule, instructorCellValueElement ', instructorCellValueElement);
             // I think we have better to get the instructor name from the ! 'show questions detail' button, but it doesn't matter. since that data get from api as well
@@ -717,6 +733,7 @@ Any question, report, feedback contact us at: ccsfsph@gmail.com
             console.debug('showPotentialSchedule, instructorName', instructorName);
             instructorCellValueElement.innerText = instructorName;
             searchProfessorByRMP(instructorName, instructorCellValueElement);
+            getCCSFTeacherInfo(instructorName, instructorEmailCellValueElement);
 
             // expand the cell for table body
             let tableElementBodyElementTdElements = tableElementBodyElement.getElementsByTagName('td');
