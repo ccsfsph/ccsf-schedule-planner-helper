@@ -50,12 +50,15 @@
     // code example: https://wiki.greasespot.net/GM.xmlHttpRequest
 
     // ====================== base lib begin, load before business ======================
+
+    // ---------------------- localStorage support expire Lib begin ----------------------
     // see: https://github.com/MrXujiang/xijs/blob/main/src/store/index.ts
     // a seal for localStorage, a lib support the expire time for localStorage
     // the origin version is ts, in js not support the dataType. I modify it
     const store = {
-        preId: 'xi-',
-        timeSign: '|-door-|',
+        //preId: 'xi-',
+        preId: '',
+        timeSign: '|-ts-|',
         status: {
             SUCCESS: 0,
             FAILURE: 1,
@@ -164,6 +167,27 @@
                 );
         },
     };
+    // Test code
+    // see https://github.com/MrXujiang/xijs/blob/main/src/store/index.md
+    // store the object
+    // let testStoreKey = 'A Test Key Name'
+    // let testStoreValue = 'ccsfsph'
+    // // store it first
+    // store.set(testStoreKey, testStoreValue, Date.now() + 1000);
+    // // get it instantly
+    // console.log('get key ' + testStoreKey + ' from store ', store.get(testStoreKey));
+    // setTimeout(() => {
+    //     console.log('get the key later, ', store.get(testStoreKey));
+    // }, 1000);
+
+    // // callback after store success
+    // store.set('kkkk123213', 'https://github.com/MrXujiang/xijs/blob/main/src/store/index.md', Date.now() + 1000, (status, key, value) => {
+    //     console.log('store success, status', status);
+    //     console.log('store success, key', key);
+    //     console.log('store success, value', value);
+    // });
+    // ---------------------- localStorage support expire Lib end ----------------------
+
     // ====================== base lib end, load before business ======================
 
     // ====================== global constants begin ======================
