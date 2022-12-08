@@ -13,7 +13,7 @@
 // @grant        GM_xmlhttpRequest
 // ==/UserScript==
 
-(function() {
+(function () {
     'use strict';
 
     // TODO:
@@ -28,12 +28,12 @@
 
     const originFetch = fetch;
     // https://juejin.cn/post/7135590843544502308
-    window.unsafeWindow.fetch = (url, options) => {
+    window.unsafeWindow.fetch = (url, options) => {
         console.log('unsafeWindow.fetch, url: ', url);
         console.log('unsafeWindow.fetch, options: ', options);
         return originFetch(url, options).then(async (response) => {
             console.log('unsafeWindow.fetch, response ', response);
-            if(url.indexOf('/generate') > -1) {
+            if (url.indexOf('/generate') > -1) {
                 console.log('unsafeWindow.fetch, get the generate request success');
                 // why we have to clone the origin response, otherwise the page cannot continue????
                 const responseClone = response.clone();
@@ -44,7 +44,7 @@
             }
             return response;
         });
-    };
+    };
 
     // tampermonkey documentation: https://www.tampermonkey.net/documentation.php
     // code example: https://wiki.greasespot.net/GM.xmlHttpRequest
@@ -249,7 +249,7 @@
                 'Accept': 'application/json',
             },
             data: requestData,
-            onload: function(response) {
+            onload: function (response) {
                 console.log('searchProfessorByRMP, response ', response);
                 let jsonText = response.responseText;
                 console.log('searchProfessorByRMP, jsonText ', jsonText);
@@ -303,7 +303,7 @@
                         'Accept': 'application/json',
                     },
                     data: searchProfessorDetailData,
-                    onload: function(response) {
+                    onload: function (response) {
                         console.log('searchProfessorByRMP, professorDetail, response ', response);
                         let jsonText = response.responseText;
                         console.log('searchProfessorByRMP, professorDetail, jsonText ', jsonText);
@@ -363,7 +363,7 @@
 
     console.log("loading ...");
 
-    window.onload = function() {
+    window.onload = function () {
         console.log("window.onload()");
 
         g_pageLoadFinish = true;
@@ -374,7 +374,7 @@
     // I also try to use event listner, but it doesn't work, I guess because the website use href to change location instead of hash.
     // plus, click the `generate` button to change href address is not working as well (I am also curious why?)
     // This method can work, but low efficiency (sam left).
-    setInterval(function() {
+    setInterval(function () {
         log("page detector works! invoke for every " + pageRefreshInterval + " ms");
         if (g_pageLoadFinish) {
             console.log("page load finish, begin to render page");
