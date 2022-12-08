@@ -186,6 +186,13 @@
     }
 
     function getCCSFTeacherInfo(professorName, professorCellElement) {
+        // In most cases, the teacher's email will not change. We should cache it permantly
+        let cacheKeyName = professorName + '/email';
+        let cacheInstrucotEmail = localStorage.getItem(cacheKeyName)
+        if (cacheInstrucotEmail) {
+            professorCellElement.innerHTML = getEmailHTML(cacheInstrucotEmail);
+            return;
+        }
         let teacherInfoURL = getCCSFTeacherInfoURL(professorName);
         console.debug('getCCSFTeacherInfo, teacherInfoURL ', teacherInfoURL);
         GM_xmlhttpRequest({
@@ -236,6 +243,7 @@
                 let email = emailRegex.exec(emailHTMLText2)[1].trim();
                 console.debug('getCCSFTeacherInfo, email ', email);
                 professorCellElement.innerHTML = getEmailHTML(email);
+                localStorage.setItem(cacheKeyName, email)
             }
         });
     }
@@ -650,8 +658,7 @@ Any question, report, feedback contact us at: ccsfsph@gmail.com
 
             let instructorEmailCellValueElement = tableElementBodyElementTrElement.insertCell(instructorEmailColumnIndex);
             console.debug('showPotentialSchedule, instructorEmailCellValueElement ', instructorEmailCellValueElement);
-            console.debug('1111111');
-            instructorEmailCellValueElement.innerText = '1221@ccsf.edu';
+            instructorEmailCellValueElement.innerText = '';
 
             getCCSFTeacherInfo(instructorName, instructorEmailCellValueElement);
 
@@ -723,7 +730,7 @@ Any question, report, feedback contact us at: ccsfsph@gmail.com
 
             let instructorEmailCellValueElement = tableElementBodyElementTrElement.insertCell(seatsOpenIndex);
             console.debug('showPotentialSchedule, instructorEmailCellValueElement ', instructorEmailCellValueElement);
-            instructorEmailCellValueElement.innerText = 'aa';
+            instructorEmailCellValueElement.innerText = '';
 
             let instructorCellValueElement = tableElementBodyElementTrElement.insertCell(seatsOpenIndex);
             console.debug('showPotentialSchedule, instructorCellValueElement ', instructorCellValueElement);
