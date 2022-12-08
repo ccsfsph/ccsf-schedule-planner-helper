@@ -151,9 +151,100 @@
             g_isSwitchSheduleUpdateFinish = false;
         }
     }
+
+    /**
+     * convert professor name from format like `Lastname, Firstname` to `firstname-lastname`
+     * 
+     * @param {String} professorName
+     * @returns reversed name
+     */
+    function reverseProfessorName(professorName) {
+        // convert from `Conner, Constance` to `constance-conner`
+        log('reverseProfessorName, professorName ', professorName);
+        if (!professorName) {
+            console.warn('reverseProfessorName, professorName is blank!!!')
+            return;
+        }
+        // TODO will this happen the professor name no ,?
+        if (professorName.indexOf(',') == -1) {
+            console.warn('reverseProfessorName, professorName no , ', professorName);
+            return;
+        }
+        let professorNameArray = professorName.split(',');
+        let lastName = professorNameArray[0].trim().toLowerCase();
+        let firstName = professorNameArray[1].trim().toLowerCase();
+        return firstName + '-' + lastName;
+    }
+
     // ---------------------- base function end ----------------------
 
     // ---------------------- Third-party API function begin ----------------------
+
+    // ********************** CCSF API function begin **********************
+    function getCCSFTeacherInfoURL(professorName) {
+        // In Schedule Planner Page, it will display like `Conner, Constance`
+        // however, the API need to get the format like 'constance-conner'
+        return getRequestURLProtocol() + 'www.ccsf.edu/directory/' + reverseProfessorName(professorName);
+    }
+    function getCCSFTeacherInfo(professorName) {
+        let teacherInfoURL = getCCSFTeacherInfoURL(professorName);
+        console.log('getCCSFTeacherInfo, teacherInfoURL ', teacherInfoURL);
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: teacherInfoURL,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.56',
+                'Accept': 'text/html',
+            },
+            onload: function (response) {
+                console.log('getCCSFTeacherInfo, response ', response);
+                let htmlText = response.responseText;
+                console.log('getCCSFTeacherInfo, htmlText ', htmlText);
+                if (!htmlText) {
+                    return;
+                }
+                /**
+                 * the example of the html template
+                 * 
+                 *   <div class="field field--name-field-email field--type-email field--label-above">
+    <div class="field__label">Email</div>
+              <div class="field__item"><a href="mailto:cconner@ccsf.edu">cconner@ccsf.edu</a></div>
+          </div>
+
+                    well, how can get the `<a href="mailto:cconner@ccsf.edu">cconner@ccsf.edu</a>`
+                 */
+                // TODO one day, I will use the regex to do it, haha
+                let emailTextSymbol = '<div class="field__label">Email</div>';
+                let emailTextSymbolLength = emailTextSymbol.length;
+                log('getCCSFTeacherInfo, emailTextSymbolLength ', emailTextSymbolLength);
+                let emailBeginIndex = htmlText.indexOf(emailTextSymbol);
+                log('getCCSFTeacherInfo, emailBeginIndex ', emailBeginIndex);
+                let beginFindIndex = emailBeginIndex + emailTextSymbolLength - 1;
+                log('getCCSFTeacherInfo, beginFindIndex ', beginFindIndex);
+                let emailEndIndex = htmlText.indexOf('</div>', beginFindIndex);
+                log('getCCSFTeacherInfo, emailEndIndex ', emailEndIndex);
+                let emailHTMLTextLength = emailEndIndex - emailBeginIndex;
+                log('getCCSFTeacherInfo, emailHTMLTextLength ', emailHTMLTextLength);
+                let emailHTMLText = htmlText.substr(emailBeginIndex, emailHTMLTextLength)
+                log('getCCSFTeacherInfo, emailHTMLText ', emailHTMLText);
+                // now, I get `<div class=\"field__label\">Email</div>\n              <div class=\"field__item\"><a href=\"mailto:cconner@ccsf.edu\">cconner@ccsf.edu</a>`
+                // I need tot get cconner@ccsf.edu
+                let emailHTMLText2 = emailHTMLText.replace('<div class=\"field__label\">Email</div>\n              <div class=\"field__item\">', "");
+                // <a href="mailto:cconner@ccsf.edu">cconner@ccsf.edu</a>
+                log('getCCSFTeacherInfo, emailHTMLText2 ', emailHTMLText2);
+                // see https://blog.csdn.net/zzti_erlie/article/details/89842391
+                let emailRegex = /">(.*)<\/a>/;
+                let email = emailRegex.exec(emailHTMLText2)[1].trim();
+                console.log('getCCSFTeacherInfo, email ', email);
+            }
+        });
+    }
+    // getCCSFTeacherInfo('Conner, Constance')
+    // getCCSFTeacherInfo('Legaspi, Erlinda')
+    // getCCSFTeacherInfo('potter, jonathan')
+    // ********************** CCSF API function end **********************
+
+    // ********************** RMP (Rate My Professors) API function end **********************
 
     // ********************** RMP (Rate My Professors) API function begin **********************
     function getProfessorsURL(legacyId) {
