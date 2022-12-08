@@ -111,6 +111,9 @@
             console.log(msg);
         }
     }
+    // log handle, set 'verbose' to see the debug info
+    // https://stackoverflow.com/questions/52453512/how-to-disable-console-log-on-production-and-display-a-banner
+    // use console.debug("xxx") to log the debug info... DON'T use console.log("xx") no more
 
     function getRequestURLProtocol() {
         return IS_USE_HTTPS ? 'https://' : 'http://';
@@ -459,8 +462,18 @@
     // ====================== global functions end ======================
 
     //
-
-    console.log("loading ...");
+    console.log(`
+    ____ ____ ____  _____ ____  ____  _   _ 
+    / ___/ ___/ ___||  ___/ ___||  _ \| | | |
+   | |  | |   \___ \| |_  \___ \| |_) | |_| |
+   | |__| |___ ___) |  _|  ___) |  __/|  _  |
+    \____\____|____/|_|   |____/|_|   |_| |_|
+                                             
+Welcome to use CCSFSPH :)
+GitHub: https://github.com/ccsfsph/ccsf-schedule-planner-helper
+Any question, report, feedback contact us at: ccsfsph@gmail.com
+`);
+    console.log('load CCSFSPH success!');
 
     window.onload = function () {
         console.log("window.onload()");
