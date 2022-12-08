@@ -132,7 +132,8 @@
         console.debug("invoke updateGlobalPageByHref...");
         let userDisplayURL = location.href;
         // https://ccsf.collegescheduler.com/terms/Spring%202023/options
-        if (userDisplayURL.indexOf('/options') !== -1) {
+        // https://ccsf.collegescheduler.com/
+        if (userDisplayURL.indexOf('/options') !== -1 || userDisplayURL.endsWith('ccsf.collegescheduler.com/') || userDisplayURL.endsWith('ccsf.collegescheduler.com')) {
             PAGE = PAGE_CURRENT_SCHEDULE;
         }
         // https://ccsf.collegescheduler.com/terms/Spring%202023/schedules/xxxxx
