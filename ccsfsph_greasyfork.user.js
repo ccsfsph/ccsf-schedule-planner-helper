@@ -514,6 +514,7 @@
             let instructorName = instrctorNameElementSpan.innerText;
             console.log('showCurrentSchedule, instructorName', instructorName);
             searchProfessorByRMP(instructorName, instrctorNameElementSpan);
+            break;
         }
     }
 
