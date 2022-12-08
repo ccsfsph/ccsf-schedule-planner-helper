@@ -274,7 +274,7 @@
         let userDisplayURL = location.href;
         // https://ccsf.collegescheduler.com/terms/Spring%202023/options
         // https://ccsf.collegescheduler.com/
-        if (userDisplayURL.indexOf('/options') !== -1 || userDisplayURL.endsWith('ccsf.collegescheduler.com/') || userDisplayURL.endsWith('ccsf.collegescheduler.com')) {
+        if (userDisplayURL.indexOf('/options') !== -1 || userDisplayURL.indexOf('/currentschedule') !== -1 || userDisplayURL.endsWith('ccsf.collegescheduler.com/') || userDisplayURL.endsWith('ccsf.collegescheduler.com')) {
             PAGE = PAGE_CURRENT_SCHEDULE;
         }
         // https://ccsf.collegescheduler.com/terms/Spring%202023/schedules/xxxxx
@@ -465,16 +465,64 @@
             // add data
             let id = localStorageProfessorProperty.id;
             console.debug('searchProfessorByRMP, id ', id);
-            let localStorageProfessorDetailJSON = localStorage.getItem(id);
-            console.debug('searchProfessorByRMP, localStorageProfessorDetailJSON ', localStorageProfessorDetailJSON);
-            let localStorageProfessorDetail = JSON.parse(localStorageProfessorDetailJSON);
-            console.debug('searchProfessorByRMP, localStorageProfessorDetail ', localStorageProfessorDetail);
-            let avgRating = localStorageProfessorDetail.data.node.avgRating;
-            console.debug('searchProfessorByRMP, avgRating ', avgRating);
-            let numRatings = localStorageProfessorDetail.data.node.numRatings;
-            console.debug('searchProfessorByRMP, numRatings ', numRatings);
-            setInstructorElement(professorName, changeHerfElement, url, getProfessRateShowFormat(avgRating, numRatings));
-            return;
+            // detail may expire, if expire, get from api
+            let storeProfessorDetail = store.get(id);
+            console.debug('searchProfessorByRMP, storeProfessorDetail ', storeProfessorDetail);
+            if (!storeProfessorDetail || !storeProfessorDetail.value) {
+                console.debug('searchProfessorByRMP, !storeProfessorDetail || !storeProfessorDetail.value')
+                let searchProfessorDetailData = buildRMPGetProfessorDetailQuery(id);
+                GM_xmlhttpRequest({
+                    method: "POST",
+                    url: requetURL,
+                    headers: {
+                        'Authorization': RMP_AUTHORIZATION_KEY,
+                        'Content-Type': 'text/plain',
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.56',
+                        'Accept': 'application/json',
+                    },
+                    data: searchProfessorDetailData,
+                    onload: function (response) {
+                        console.debug('searchProfessorByRMP, professorDetail, response ', response);
+                        let jsonText = response.responseText;
+                        console.debug('searchProfessorByRMP, professorDetail, jsonText ', jsonText);
+                        let dataObj = JSON.parse(jsonText);
+                        console.debug('searchProfessorByRMP, professorDetail, dataObj ', dataObj);
+                        let professorDetail = dataObj.data.node;
+                        console.debug('searchProfessorByRMP, professorDetail ', professorDetail);
+
+                        if (!professorDetail) {
+                            console.debug('searchProfessorByRMP, professorDetail is null ', professorDetail);
+                            return;
+                        }
+
+                        // avgRating: 2.3
+                        let avgRating = professorDetail.avgRating;
+                        console.debug('searchProfessorByRMP, professorDetail, avgRating', avgRating);
+                        // avgDifficulty: 2
+                        let avgDifficulty = professorDetail.avgDifficulty;
+                        console.debug('searchProfessorByRMP, professorDetail, avgDifficulty', avgDifficulty);
+                        // numRatings: 4
+                        let numRatings = professorDetail.numRatings;
+                        console.debug('searchProfessorByRMP, professorDetail, numRatings', numRatings);
+
+                        store.set(id, jsonText);
+
+                        setInstructorElement(professorName, changeHerfElement, professionPageURL, getProfessRateShowFormat(avgRating, numRatings));
+                    }
+                });
+                return;
+            } else {
+                let localStorageProfessorDetailJSON = storeProfessorDetail.value;
+                console.debug('searchProfessorByRMP, localStorageProfessorDetailJSON ', localStorageProfessorDetailJSON);
+                let localStorageProfessorDetail = JSON.parse(localStorageProfessorDetailJSON);
+                console.debug('searchProfessorByRMP, localStorageProfessorDetail ', localStorageProfessorDetail);
+                let avgRating = localStorageProfessorDetail.data.node.avgRating;
+                console.debug('searchProfessorByRMP, avgRating ', avgRating);
+                let numRatings = localStorageProfessorDetail.data.node.numRatings;
+                console.debug('searchProfessorByRMP, numRatings ', numRatings);
+                setInstructorElement(professorName, changeHerfElement, url, getProfessRateShowFormat(avgRating, numRatings));
+                return;
+            }
         }
         let requetURL = getRMPSearchProfessorAPI();
         console.debug('searchProfessorByRMP, requetURL ', requetURL);
@@ -533,6 +581,7 @@
                 setInstructorElement(professorName, changeHerfElement, professionPageURL);
 
                 // use the id to get the professor detail
+                // TODO get from cache first, maybe have cache from local
                 let searchProfessorDetailData = buildRMPGetProfessorDetailQuery(id);
                 GM_xmlhttpRequest({
                     method: "POST",
@@ -568,7 +617,7 @@
                         let numRatings = professorDetail.numRatings;
                         console.debug('searchProfessorByRMP, professorDetail, numRatings', numRatings);
 
-                        localStorage.setItem(id, jsonText);
+                        store.set(id, jsonText);
 
                         setInstructorElement(professorName, changeHerfElement, professionPageURL, getProfessRateShowFormat(avgRating, numRatings));
                     }
