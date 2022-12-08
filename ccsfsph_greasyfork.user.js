@@ -53,117 +53,117 @@
     // see: https://github.com/MrXujiang/xijs/blob/main/src/store/index.ts
     // a seal for localStorage, a lib support the expire time for localStorage
     // the origin version is ts, in js not support the dataType. I modify it
- const store = {
-    preId: 'xi-',
-    timeSign: '|-door-|',
-    status: {
-      SUCCESS: 0,
-      FAILURE: 1,
-      OVERFLOW: 2,
-      TIMEOUT: 3,
-    },
-    storage: localStorage || window.localStorage,
-    getKey: function (key) {
-      return this.preId + key;
-    },
-    set: function (
-      key,
-      value,
-      time,
-      cb,
-    ) {
-      let _status = this.status.SUCCESS,
-        _key = this.getKey(key),
-        _time;
-      // set the expire time, if not provided, the default expire time is: one month
-      try {
-        _time = time
-          ? new Date(time).getTime() || time.getTime()
-          : new Date().getTime() + 1000 * 60 * 60 * 24 * 31;
-      } catch (e) {
-        _time = new Date().getTime() + 1000 * 60 * 60 * 24 * 31;
-      }
-      try {
-        this.storage.setItem(_key, _time + this.timeSign + value);
-      } catch (e) {
-        _status = this.status.OVERFLOW;
-      }
-      cb && cb.call(this, _status, _key, value);
-    },
-    get: function (
-      key,
-      cb,
-    ) {
-      let status = this.status.SUCCESS,
-        _key = this.getKey(key),
-        value = null,
-        timeSignLen = this.timeSign.length,
-        that = this,
-        index,
-        time,
-        result;
-      try {
-        value = that.storage.getItem(_key);
-      } catch (e) {
-        result = {
-          status: that.status.FAILURE,
-          value: null,
-        };
-        cb && cb.call(this, result.status, result.value);
-        return result;
-      }
-      if (value) {
-        index = value.indexOf(that.timeSign);
-        time = +value.slice(0, index);
-        if (time > new Date().getTime() || time == 0) {
-          value = value.slice(index + timeSignLen);
-        } else {
-          (value = null), (status = that.status.TIMEOUT);
-          that.remove(key);
-        }
-      } else {
-        status = that.status.FAILURE;
-      }
-      result = {
-        status: status,
-        value: value,
-      };
-      cb && cb.call(this, result.status, result.value);
-      return result;
-    },
-    // delete from localStorage, if delete success, return the deleted content
-    remove: function (
-      key,
-      cb,
-    ) {
-      let status = this.status.FAILURE,
-        _key = this.getKey(key),
-        value;
-      try {
-        value = this.storage.getItem(_key);
-      } catch (e) {
-        // dosomething
-      }
-      if (value) {
-        try {
-          this.storage.removeItem(_key);
-          status = this.status.SUCCESS;
-        } catch (e) {
-          // dosomething
-        }
-      }
-      cb &&
-        cb.call(
-          this,
-          status,
-          status > 0
-            ? null
-            : value
-            ? value.slice(value.indexOf(this.timeSign) + this.timeSign.length)
-            : null,
-        );
-    },
-  };
+    const store = {
+        preId: 'xi-',
+        timeSign: '|-door-|',
+        status: {
+            SUCCESS: 0,
+            FAILURE: 1,
+            OVERFLOW: 2,
+            TIMEOUT: 3,
+        },
+        storage: localStorage || window.localStorage,
+        getKey: function (key) {
+            return this.preId + key;
+        },
+        set: function (
+            key,
+            value,
+            time,
+            cb,
+        ) {
+            let _status = this.status.SUCCESS,
+                _key = this.getKey(key),
+                _time;
+            // set the expire time, if not provided, the default expire time is: one month
+            try {
+                _time = time
+                    ? new Date(time).getTime() || time.getTime()
+                    : new Date().getTime() + 1000 * 60 * 60 * 24 * 31;
+            } catch (e) {
+                _time = new Date().getTime() + 1000 * 60 * 60 * 24 * 31;
+            }
+            try {
+                this.storage.setItem(_key, _time + this.timeSign + value);
+            } catch (e) {
+                _status = this.status.OVERFLOW;
+            }
+            cb && cb.call(this, _status, _key, value);
+        },
+        get: function (
+            key,
+            cb,
+        ) {
+            let status = this.status.SUCCESS,
+                _key = this.getKey(key),
+                value = null,
+                timeSignLen = this.timeSign.length,
+                that = this,
+                index,
+                time,
+                result;
+            try {
+                value = that.storage.getItem(_key);
+            } catch (e) {
+                result = {
+                    status: that.status.FAILURE,
+                    value: null,
+                };
+                cb && cb.call(this, result.status, result.value);
+                return result;
+            }
+            if (value) {
+                index = value.indexOf(that.timeSign);
+                time = +value.slice(0, index);
+                if (time > new Date().getTime() || time == 0) {
+                    value = value.slice(index + timeSignLen);
+                } else {
+                    (value = null), (status = that.status.TIMEOUT);
+                    that.remove(key);
+                }
+            } else {
+                status = that.status.FAILURE;
+            }
+            result = {
+                status: status,
+                value: value,
+            };
+            cb && cb.call(this, result.status, result.value);
+            return result;
+        },
+        // delete from localStorage, if delete success, return the deleted content
+        remove: function (
+            key,
+            cb,
+        ) {
+            let status = this.status.FAILURE,
+                _key = this.getKey(key),
+                value;
+            try {
+                value = this.storage.getItem(_key);
+            } catch (e) {
+                // dosomething
+            }
+            if (value) {
+                try {
+                    this.storage.removeItem(_key);
+                    status = this.status.SUCCESS;
+                } catch (e) {
+                    // dosomething
+                }
+            }
+            cb &&
+                cb.call(
+                    this,
+                    status,
+                    status > 0
+                        ? null
+                        : value
+                            ? value.slice(value.indexOf(this.timeSign) + this.timeSign.length)
+                            : null,
+                );
+        },
+    };
     // ====================== base lib end, load before business ======================
 
     // ====================== global constants begin ======================
