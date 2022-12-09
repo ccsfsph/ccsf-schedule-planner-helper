@@ -10,10 +10,13 @@
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/license-GPLv3.0-lightgrey.svg?style=flat-square" alt="LICENSE">
   </a>
-  <img src="https://img.shields.io/badge/Chrome-≥76.0-brightgreen.svg?style=flat-square" alt="chrome">
-  <img src="https://img.shields.io/badge/Edge-≥88.0-brightgreen.svg?style=flat-square" alt="edge">
+  <img src="https://img.shields.io/badge/Chrome->= 31-brightgreen.svg?style=flat-square" alt="chrome">
+  <img src="https://img.shields.io/badge/Edge->= 79-brightgreen.svg?style=flat-square" alt="edge">
+  <img src="https://img.shields.io/badge/Safari->= 6-brightgreen.svg?style=flat-square" alt="safari">
+  <img src="https://img.shields.io/badge/Firefox->= 52-brightgreen.svg?style=flat-square" alt="firefox">
   <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20Mac%20%7C%20Linux-blue.svg?style=flat-square" alt="platform">
 </p>
+
 
 <div align="center">
   <h3>
