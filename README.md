@@ -40,9 +40,9 @@ Any questions, feedbacks, contact us by: [ccsfsph@gmail.com](mailto:ccsfsph@gmai
 
 After use:
 
-![image-20221208162905749](./pictures/README/image-20221208162905749.png)
+![image-20221208162905749](https://ccsfsph.github.io/pictures/ccsf-schedule-planner-helper/image-20221208162905749.png)
 
 Before use:
 
-![image-20221208162924433](./pictures/README/image-20221208162924433.png)
+![image-20221208162924433](https://ccsfsph.github.io/pictures/ccsf-schedule-planner-helper/image-20221208162924433.png)
 
