@@ -33,11 +33,11 @@
 <div align="center">
   <strong>CCSFSPH (City College of San Francisco Schedule Planner Helper), a free, convenient, powerful and open source user script, run on Tampermonkey.</strong><br>
 </div>
-
+Do you have trouble in finding the instructor's email? Do you have trouble in choosing course for which instructor is suitable for you? Let us an wonderful, free, and open source broswer user script called `CCSF Schedule Planner Heleper` to help you! 
 
 Document: [https://ccsfsph.github.io](https://ccsfsph.github.io)
 
-Open source: [https://github.com/ccsfsph/ccsf-schedule-planner-helper](https://github.com/ccsfsph/ccsf-schedule-planner-helper)
+Open source Repository: [https://github.com/ccsfsph/ccsf-schedule-planner-helper](https://github.com/ccsfsph/ccsf-schedule-planner-helper)
 
 Report issues: [https://github.com/ccsfsph/ccsf-schedule-planner-helper/issues](https://github.com/ccsfsph/ccsf-schedule-planner-helper/issues)
 
