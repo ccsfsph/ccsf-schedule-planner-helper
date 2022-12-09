@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CCSF Schedule Planner Helper
 // @namespace    https://github.com/ccsfsph/ccsf-schedule-planner-helper
-// @version      0.0.6
+// @version      0.0.7
 // @description  This userscript helps student to choose course more convenient
 // @author       ccsfsph
 // @match        *://ccsf.collegescheduler.com/*
@@ -473,6 +473,7 @@
             let localStorageProfessorProperty = JSON.parse(localStorageProfessorPropertyJSON);
             console.debug('searchProfessorByRMP, localStorageProfessorProperty ', localStorageProfessorProperty);
             let url = getProfessorsURL(localStorageProfessorProperty.legacyId);
+            console.debug('searchProfessorByRMP, url ', url)
             setInstructorElement(professorName, changeHerfElement, url);
             // add data
             let id = localStorageProfessorProperty.id;
@@ -649,10 +650,12 @@
         let scheduleJSONData = localStorage.getItem('generate-request');
         console.debug('getScheduleByCRN, scheduleJSONData ' + scheduleJSONData);
         let scheduleData = JSON.parse(scheduleJSONData);
+        console.debug('getScheduleByCRN, scheduleData', scheduleData);
         let scheduleDataSections = scheduleData.sections;
         for (let scheduleDataSection of scheduleDataSections) {
             console.debug('getScheduleByCRN, scheduleDataSection ', scheduleDataSection);
             if (scheduleDataSection.id === crn) {
+                console.debug('getScheduleByCRN, scheduleDataSection.id === crn, crn ', crn);
                 return scheduleDataSection;
             }
         }
