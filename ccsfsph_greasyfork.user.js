@@ -235,6 +235,8 @@
     const PAGE_CURRENT_SCHEDULE = 'PAGE_CURRENT_SCHEDULE';
     // identify user is choosing the course, viewing the potential / possible schedule
     const PAGE_POTENTIAL_SCHEDULE = 'PAGE_POTENTIAL_SCHEDULE';
+    // page contains /courses
+    const PAGE_COURSE_SCHEDULE = 'PAGE_COURSE_SCHEDULE';
     const PAGE_UNKNOWN = 'PAGE_UNKNOWN';
 
     var g_instructorColumnIndex = 0;
@@ -242,6 +244,7 @@
     var g_instructorEmailColumnIndex = 0;
     var g_isUpdateLocationChangeFinish = false;
     var g_isSwitchSheduleUpdateFinish = true;
+    var g_isSwitchCoursePageFinish = true;
     var g_tableHeadTotalCell = -1;
     var g_tableHeadCrnIndex = -1;
     var g_tableHeadSeatsOpenIndex = -1;
@@ -286,8 +289,11 @@
         let userDisplayURL = location.href;
         // https://ccsf.collegescheduler.com/terms/Spring%202023/options
         // https://ccsf.collegescheduler.com/
-        if (userDisplayURL.indexOf('/options') !== -1 || userDisplayURL.indexOf('/courses') !== -1 || userDisplayURL.indexOf('/currentschedule') !== -1 || userDisplayURL.indexOf('/cart') !== -1 || userDisplayURL.endsWith('ccsf.collegescheduler.com/') || userDisplayURL.endsWith('ccsf.collegescheduler.com')) {
+        if (userDisplayURL.indexOf('/options') !== -1 || userDisplayURL.indexOf('/currentschedule') !== -1 || userDisplayURL.indexOf('/cart') !== -1 || userDisplayURL.endsWith('ccsf.collegescheduler.com/') || userDisplayURL.endsWith('ccsf.collegescheduler.com')) {
             PAGE = PAGE_CURRENT_SCHEDULE;
+        }
+        else if (userDisplayURL.indexOf('/courses') !== -1) {
+            PAGE = PAGE_COURSE_SCHEDULE;
         }
         // https://ccsf.collegescheduler.com/terms/Spring%202023/schedules/xxxxx
         else if (userDisplayURL.indexOf('/schedules/') !== -1) {
@@ -296,11 +302,19 @@
         else {
             PAGE = PAGE_UNKNOWN;
         }
+        console.debug("updateGlobalPageByHref, PAGE ", PAGE)
     }
 
     function updateUserSwitchPotentialSchedulePage() {
-        if (isLocationChange() && PAGE === PAGE_POTENTIAL_SCHEDULE) {
+        let locationChangeFlag = isLocationChange();
+        console.debug("updateUserSwitchPotentialSchedulePage, locationChangeFlag ", locationChangeFlag);
+        if (locationChangeFlag && PAGE === PAGE_POTENTIAL_SCHEDULE) {
+            console.debug("updateUserSwitchPotentialSchedulePage, locationChangeFlag && PAGE === PAGE_POTENTIAL_SCHEDULE")
             g_isSwitchSheduleUpdateFinish = false;
+        }
+        if (locationChangeFlag && PAGE === PAGE_COURSE_SCHEDULE) {
+            console.debug("updateUserSwitchPotentialSchedulePage, locationChangeFlag && PAGE === PAGE_COURSE_SCHEDULE")
+            g_isSwitchCoursePageFinish = false;
         }
     }
 
@@ -695,9 +709,9 @@ You can also contact us at: ccsfsph@gmail.com
         if (g_pageLoadFinish) {
             console.debug("page load finish, begin to render page");
             updateUserSwitchPotentialSchedulePage();
-            let flag = (!g_isFirstLoadSuccess && (PAGE === PAGE_POTENTIAL_SCHEDULE || PAGE === PAGE_CURRENT_SCHEDULE));
+            let flag = (!g_isFirstLoadSuccess && (PAGE === PAGE_POTENTIAL_SCHEDULE || PAGE === PAGE_CURRENT_SCHEDULE || PAGE === PAGE_COURSE_SCHEDULE));
             console.debug("g_pageLoadFinish, flag, ", flag);
-            if (!g_isUpdateLocationChangeFinish || flag) {
+            if (!g_isUpdateLocationChangeFinish || flag || !g_isSwitchCoursePageFinish) {
                 handleSchedulePlannerPage();
             }
         } else {
@@ -1002,6 +1016,7 @@ You can also contact us at: ccsfsph@gmail.com
             if (!tHeadElement) {
                 return console.debug('handleSchedulePlannerPage, no tHeadElement found');
             }
+            g_isSwitchCoursePageFinish = true;
             console.debug('handleSchedulePlannerPage, tHeadElement ', tHeadElement);
             let tHeadtrElement = tHeadElement.rows[0];
             console.debug('handleSchedulePlannerPage, tHeadtrElement ', tHeadtrElement);
