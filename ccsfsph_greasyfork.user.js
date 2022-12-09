@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CCSF Schedule Planner Helper
 // @namespace    https://github.com/ccsfsph/ccsf-schedule-planner-helper
-// @version      0.0.4
+// @version      0.0.5
 // @description  This userscript helps student to choose course more convenient
 // @author       ccsfsph
 // @match        *://ccsf.collegescheduler.com/*
