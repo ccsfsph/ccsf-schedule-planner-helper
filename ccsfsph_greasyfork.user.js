@@ -286,7 +286,7 @@
         let userDisplayURL = location.href;
         // https://ccsf.collegescheduler.com/terms/Spring%202023/options
         // https://ccsf.collegescheduler.com/
-        if (userDisplayURL.indexOf('/options') !== -1 || userDisplayURL.indexOf('/courses/') !== -1 || userDisplayURL.indexOf('/currentschedule') !== -1 || userDisplayURL.indexOf('/cart') !== -1 || userDisplayURL.endsWith('ccsf.collegescheduler.com/') || userDisplayURL.endsWith('ccsf.collegescheduler.com')) {
+        if (userDisplayURL.indexOf('/options') !== -1 || userDisplayURL.indexOf('/courses') !== -1 || userDisplayURL.indexOf('/currentschedule') !== -1 || userDisplayURL.indexOf('/cart') !== -1 || userDisplayURL.endsWith('ccsf.collegescheduler.com/') || userDisplayURL.endsWith('ccsf.collegescheduler.com')) {
             PAGE = PAGE_CURRENT_SCHEDULE;
         }
         // https://ccsf.collegescheduler.com/terms/Spring%202023/schedules/xxxxx
