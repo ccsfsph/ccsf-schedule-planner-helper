@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CCSF Schedule Planner Helper
 // @namespace    https://github.com/ccsfsph/ccsf-schedule-planner-helper
-// @version      0.0.9
+// @version      0.1.0
 // @description  This userscript helps student to choose course more convenient
 // @author       ccsfsph
 // @match        *://ccsf.collegescheduler.com/*
@@ -90,13 +90,13 @@
             let _status = this.status.SUCCESS,
                 _key = this.getKey(key),
                 _time;
-            // set the expire time, if not provided, the default expire time is: one month
+            // set the expire time, if not provided, the default expire time is: 7 days
             try {
                 _time = time
                     ? new Date(time).getTime() || time.getTime()
-                    : new Date().getTime() + 1000 * 60 * 60 * 24 * 31;
+                    : new Date().getTime() + (1000 * 60 * 60 * 24 * 7);
             } catch (e) {
-                _time = new Date().getTime() + 1000 * 60 * 60 * 24 * 31;
+                _time = new Date().getTime() + (1000 * 60 * 60 * 24 * 7);
             }
             try {
                 this.storage.setItem(_key, _time + this.timeSign + value);
