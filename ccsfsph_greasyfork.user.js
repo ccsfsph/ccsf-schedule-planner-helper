@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CCSF Schedule Planner Helper
 // @namespace    https://github.com/ccsfsph/ccsf-schedule-planner-helper
-// @version      0.0.5
+// @version      0.0.6
 // @description  This userscript helps student to choose course more convenient
 // @author       ccsfsph
 // @match        *://ccsf.collegescheduler.com/*
@@ -19,6 +19,14 @@
 
 (function () {
     'use strict';
+
+    // *********************************************************
+    // Welcome use CCSF Schedule Planner Helper
+    // all code is open source at: https://github.com/ccsfsph/ccsf-schedule-planner-helper
+    // document: http://ccsfsph.github.io/
+    // ccsf-schedule-planner-helper use `GPL-3.0` as open source license
+    // you should use code under the license
+    // *********************************************************
 
     // TODO:
     // 1. Remember to fix the switch scheule not work problem, since we need to listen the button event
