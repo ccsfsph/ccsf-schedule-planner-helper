@@ -781,6 +781,9 @@ You can also contact us at: ccsfsph@gmail.com
                                         console.debug("setInterval, switchTabListLiElement.onclick")
                                         g_isSwitchCoursePageFinish = false;
                                         console.debug("setInterval, switchTabListLiElement.onclick, g_isSwitchCoursePageFinish = false")
+                                        // when click the switch tab, the switch page button event will be removed, since we need to rerender again!
+                                        g_initCoursePageEventFlag = false;
+                                        console.debug("setInterval, switchTabListLiElement.onclick, g_initCoursePageEventFlag = false");
                                     }
                                 }
                                 switchTabElementInitResult = true;
