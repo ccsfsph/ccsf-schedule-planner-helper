@@ -486,15 +486,21 @@
 
     function getProfessRateShowFormat(avgRating, numRatings) {
         // TODO: strengthen the avgRating to use different color
-        // >= 4.1: red
-        // 3.3 - 4.0: green
-        // < 3.3: blue
-        if (avgRating >= 4.1) {
-            avgRating = '<span style="color: red;">' + avgRating + '</span>';
-        } else if (avgRating >= 3.3) {
+        // >= 4.8: orange
+        // 4.0 - 4.7: purple
+        // 3.0 - 3.9: blue
+        // 2.0 - 2.9: green
+        // < 2.0: grey (don't user white, since the in the page cannot see)
+        if (avgRating >= 4.8) {
+            avgRating = '<span style="color: orange;">' + avgRating + '</span>';
+        } else if (avgRating >= 4.0) {
+            avgRating = '<span style="color: purple;">' + avgRating + '</span>';
+        } else if (avgRating >= 3.0) {
+            avgRating = '<span style="color: blue;">' + avgRating + '</span>';
+        } else if (avgRating >= 2.0) {
             avgRating = '<span style="color: green;">' + avgRating + '</span>';
         } else {
-            avgRating = '<span style="color: blue;">' + avgRating + '</span>';
+            avgRating = '<span style="color: grey;">' + avgRating + '</span>';
         }
         return '<br>' + avgRating + ' / 5<br>' + numRatings + ' ratings';
     }
