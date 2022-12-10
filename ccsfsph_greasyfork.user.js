@@ -743,7 +743,7 @@ You can also contact us at: ccsfsph@gmail.com
                             if (buttonElements) {
                                 for (let buttonElement of buttonElements) {
                                     console.debug("setInterval, buttonElement ", buttonElement)
-                                    buttonElement.onclick = function() {
+                                    buttonElement.onclick = function () {
                                         console.debug("setInterval, buttonElement.onclick")
                                         g_isSwitchCoursePageFinish = false;
                                         console.debug("setInterval, g_isSwitchCoursePageFinish = false")
