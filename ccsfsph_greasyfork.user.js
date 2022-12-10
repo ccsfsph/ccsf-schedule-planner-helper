@@ -732,6 +732,9 @@ You can also contact us at: ccsfsph@gmail.com
             if (PAGE === PAGE_COURSE_SCHEDULE) {
                 console.debug("setInterval, PAGE === PAGE_COURSE_SCHEDULE, g_initCoursePageEventFlag, ", g_initCoursePageEventFlag)
                 if (!g_initCoursePageEventFlag) {
+                    let barElementInitResult = false;
+                    let switchTabElementInitResult = false;
+
                     let barElements = document.getElementsByClassName(TABLE_SWITCH_PAGE_BAR_CLASS_NAME);
                     console.debug("setInterval, barElements ", barElements);
                     if (barElements) {
@@ -746,14 +749,38 @@ You can also contact us at: ccsfsph@gmail.com
                                     buttonElement.onclick = function () {
                                         console.debug("setInterval, buttonElement.onclick")
                                         g_isSwitchCoursePageFinish = false;
-                                        console.debug("setInterval, g_isSwitchCoursePageFinish = false")
+                                        console.debug("setInterval, buttonElement.onclick, g_isSwitchCoursePageFinish = false")
                                     }
                                 }
-                                g_initCoursePageEventFlag = true;
-                                console.debug("setInterval, g_initCoursePageEventFlag = true")
+                                barElementInitResult = true;
+                                console.debug("setInterval, barElementInitResult = true")
                             }
                         }
                     }
+
+                    // switch tab
+                    let switchTabListElements = document.getElementsByClassName("css-ta6bli-tabCss nav nav-tabs pull-left");
+                    console.debug("setInterval, switchTabListElements ", switchTabListElements)
+                    if (switchTabListElements) {
+                        let switchTabListElement = switchTabListElements[0];
+                        console.debug("setInterval, switchTabListElement ", switchTabListElement)
+                        let switchTabListLiElements = switchTabListElement.getElementsByTagName("li")
+                        console.debug("setInterval, switchTabListLiElements ", switchTabListLiElements)
+                        if (switchTabListLiElements) {
+                            for (let switchTabListLiElement of switchTabListLiElements) {
+                                console.debug("setInterval, switchTabListLiElement ", switchTabListLiElement)
+                                switchTabListLiElement.onclick = function () {
+                                    console.debug("setInterval, switchTabListLiElement.onclick")
+                                    g_isSwitchCoursePageFinish = false;
+                                    console.debug("setInterval, switchTabListLiElement.onclick, g_isSwitchCoursePageFinish = false")
+                                }
+                            }
+                            switchTabElementInitResult = true;
+                            console.debug("setInterval, switchTabElementInitResult = true")
+                        }
+                    }
+
+                    g_initCoursePageEventFlag = barElementInitResult && switchTabElementInitResult;
                 }
             }
 
