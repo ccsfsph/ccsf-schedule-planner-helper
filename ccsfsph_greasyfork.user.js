@@ -353,10 +353,17 @@
             console.warn('reverseProfessorName, professorName no , ', professorName);
             return;
         }
+
         let professorNameArray = professorName.split(',');
-        let lastName = professorNameArray[0].trim().toLowerCase();
-        let firstName = professorNameArray[1].trim().toLowerCase();
-        return firstName + '-' + lastName;
+        console.debug("reverseProfessorName, professorNameArray ", professorNameArray)
+        // there are some exceptions, like `Collins Rawle, Shelly`, we should remove the blank symbol, and add an hypen `-`
+        let lastName = professorNameArray[0].trim().toLowerCase().replace(" ", "-");
+        console.debug(`reverseProfessorName, professorName: ${professorName}, lastName: ${lastName}`)
+        let firstName = professorNameArray[1].trim().toLowerCase().replace(" ", "-");
+        console.debug(`reverseProfessorName, professorName: ${professorName}, firstName: ${firstName}`)
+        let conversedProfessorName = firstName + '-' + lastName
+        console.debug(`reverseProfessorName, professorName: ${professorName}, conversedProfessorName: ${conversedProfessorName}`)
+        return conversedProfessorName;
     }
 
     // ---------------------- base function end ----------------------
