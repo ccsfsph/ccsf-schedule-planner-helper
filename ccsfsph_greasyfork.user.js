@@ -216,7 +216,14 @@
     // ---------------------- constants for Schedule Plnnaer begin ----------------------
     // NOTE: since the website use 'React' to compile, the name of css may change for every compile,
     // may change the name of css every times when the website update
-    const SCHEDULE_PLANNER_TABLE_HEAD_CLASS_NAME = 'css-ri4373-headerCss';
+    // NOTE: Since the site use 'React' to build, with the page update, those css name may change.
+    // So, we may need to update in the future
+    // for table
+    const TABLE_THEAD_CLASS_NAME = 'css-ri4373-headerCss';
+    const TABLE_HEAD_TH_CELL_CLASS_NAME = 'css-17qtf8g-hideOnMobileCss';
+    const TABLE_DATA_TD_CELL_CLASS_NAME = 'css-1p12g40-cellCss-hideOnMobileCss';
+    // for `Sections` page bar name
+    const TABLE_SWITCH_PAGE_BAR_CLASS_NAME = 'css-10ym66b-pagerCss';
     // ---------------------- constants for Schedule Plnnaer end ----------------------
 
     // ====================== global constants end ======================
@@ -720,7 +727,7 @@ You can also contact us at: ccsfsph@gmail.com
             if (PAGE === PAGE_COURSE_SCHEDULE) {
                 console.debug("setInterval, PAGE === PAGE_COURSE_SCHEDULE, g_initCoursePageEventFlag, ", g_initCoursePageEventFlag)
                 if (!g_initCoursePageEventFlag) {
-                    let barElements = document.getElementsByClassName('css-10ym66b-pagerCss');
+                    let barElements = document.getElementsByClassName(TABLE_SWITCH_PAGE_BAR_CLASS_NAME);
                     console.debug("setInterval, barElements ", barElements);
                     if (barElements) {
                         let barElement = barElements[0];
@@ -799,7 +806,7 @@ You can also contact us at: ccsfsph@gmail.com
             // let emailCapacityCell = tableHeadthRows.insertCell(instructorIndex + 1);
             let emailCapacityCell = document.createElement('th');
             emailCapacityCell.index = instructorIndex + 1;
-            emailCapacityCell.setAttribute('class', 'css-17qtf8g-hideOnMobileCss')
+            emailCapacityCell.setAttribute('class', TABLE_HEAD_TH_CELL_CLASS_NAME)
             tableHeadthRows.appendChild(emailCapacityCell)
             console.debug('showPotentialSchedule, emailCapacityCell', emailCapacityCell);
             emailCapacityCell.innerText = 'Instructor Email';
@@ -924,7 +931,7 @@ You can also contact us at: ccsfsph@gmail.com
             console.debug('instructorName, ', instructorName);
 
             let instructorEmailCellValueElement = document.createElement('td');
-            instructorEmailCellValueElement.setAttribute('class', 'css-1p12g40-cellCss-hideOnMobileCss')
+            instructorEmailCellValueElement.setAttribute('class', TABLE_DATA_TD_CELL_CLASS_NAME)
             tableElementBodyElementTrElement.appendChild(instructorEmailCellValueElement)
             // let instructorEmailCellValueElement = tableElementBodyElementTrElement.insertCell(instructorEmailColumnIndex);
             console.debug('showPotentialSchedule, instructorEmailCellValueElement ', instructorEmailCellValueElement);
@@ -1055,8 +1062,7 @@ You can also contact us at: ccsfsph@gmail.com
 
     function handleSchedulePlannerPage() {
         g_isUpdateLocationChangeFinish = true;
-        // const SCHEDULE_PLANNER_TABLE_HEAD_CLASS_NAME = 'css-ri4373-headerCss';
-        let tHeadElements = document.getElementsByClassName(SCHEDULE_PLANNER_TABLE_HEAD_CLASS_NAME);
+        let tHeadElements = document.getElementsByClassName(TABLE_THEAD_CLASS_NAME);
         if (tHeadElements) {
             console.debug(" schedule planner page ");
             console.debug('handleSchedulePlannerPage, tHeadElements ', tHeadElements);
