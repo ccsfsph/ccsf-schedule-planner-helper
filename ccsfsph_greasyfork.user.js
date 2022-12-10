@@ -2,7 +2,7 @@
 // @name         CCSF Schedule Planner Helper
 // @namespace    https://github.com/ccsfsph/ccsf-schedule-planner-helper
 // @version      0.1.1
-// @description  This userscript helps student to choose course more convenient
+// @description  This userscript helps student to choose course more convenient, extenions: instructor email, instructor scores and rates from RMP for every table, and seats capacity in potential page table
 // @author       ccsfsph
 // @match        *://ccsf.collegescheduler.com/*
 // @match        *://*.ccsf.edu/*
