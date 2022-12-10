@@ -302,7 +302,7 @@
         // https://ccsf.collegescheduler.com/terms/Spring%202023/options
         // https://ccsf.collegescheduler.com/
         // NOTE: ignore `/cart/edit` page, don't use indexOf
-        if (userDisplayURL.indexOf('/options') !== -1 || userDisplayURL.indexOf('/currentschedule') !== -1 || userDisplayURL.endsWith('/cart') !== -1 || userDisplayURL.endsWith('ccsf.collegescheduler.com/') || userDisplayURL.endsWith('ccsf.collegescheduler.com')) {
+        if (userDisplayURL.indexOf('/options') !== -1 || userDisplayURL.indexOf('/currentschedule') !== -1 || userDisplayURL.endsWith('/cart') || userDisplayURL.endsWith('ccsf.collegescheduler.com/') || userDisplayURL.endsWith('ccsf.collegescheduler.com')) {
             PAGE = PAGE_CURRENT_SCHEDULE;
         }
         else if (userDisplayURL.indexOf('/courses') !== -1) {
