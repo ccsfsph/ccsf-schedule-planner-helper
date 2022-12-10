@@ -1060,51 +1060,55 @@ You can also contact us at: ccsfsph@gmail.com
         if (tHeadElements) {
             console.debug(" schedule planner page ");
             console.debug('handleSchedulePlannerPage, tHeadElements ', tHeadElements);
-            // the first row is the table title head
             let tHeadElement = tHeadElements[0];
             if (!tHeadElement) {
                 return console.debug('handleSchedulePlannerPage, no tHeadElement found');
             }
-            console.debug('handleSchedulePlannerPage, tHeadElement ', tHeadElement);
-            let tHeadtrElement = tHeadElement.rows[0];
-            console.debug('handleSchedulePlannerPage, tHeadtrElement ', tHeadtrElement);
-            let tHeadtrElementCells = tHeadtrElement.cells;
-            console.debug('handleSchedulePlannerPage, tHeadtrElementCells ', tHeadtrElementCells);
-            // we should get the column index, and use the index to get the row for each instrutor name
-            let instructorRowIndex = -1;
-            for (let tHeadtrElementCell of tHeadtrElementCells) {
-                instructorRowIndex++;
-                console.debug('handleSchedulePlannerPage, tHeadtrElementCellIndex ', instructorRowIndex);
-                console.debug('handleSchedulePlannerPage, tHeadtrElementCell ', tHeadtrElementCell);
-                // try to find the text 'Instructor' Element
-                let cellText = tHeadtrElementCell.innerText;
-                console.debug('handleSchedulePlannerPage, tHeadtrElementCell, cellText', cellText);
-                if (cellText === 'Instructor') {
-                    console.debug('handleSchedulePlannerPage, tHeadtrElementCell: found the Instructor element', tHeadtrElementCell);
-                    break;
+            // may have more table in one page, like the index page. current scheule and saved schedule
+            for (let tHeadElement of tHeadElements) {
+                console.debug('handleSchedulePlannerPage, tHeadElement ', tHeadElement);
+                // the first row is the table title head
+                let tHeadtrElement = tHeadElement.rows[0];
+                console.debug('handleSchedulePlannerPage, tHeadtrElement ', tHeadtrElement);
+                let tHeadtrElementCells = tHeadtrElement.cells;
+                console.debug('handleSchedulePlannerPage, tHeadtrElementCells ', tHeadtrElementCells);
+                // we should get the column index, and use the index to get the row for each instrutor name
+                let instructorRowIndex = -1;
+                for (let tHeadtrElementCell of tHeadtrElementCells) {
+                    instructorRowIndex++;
+                    console.debug('handleSchedulePlannerPage, tHeadtrElementCellIndex ', instructorRowIndex);
+                    console.debug('handleSchedulePlannerPage, tHeadtrElementCell ', tHeadtrElementCell);
+                    // try to find the text 'Instructor' Element
+                    let cellText = tHeadtrElementCell.innerText;
+                    console.debug('handleSchedulePlannerPage, tHeadtrElementCell, cellText', cellText);
+                    if (cellText === 'Instructor') {
+                        console.debug('handleSchedulePlannerPage, tHeadtrElementCell: found the Instructor element', tHeadtrElementCell);
+                        break;
+                    }
                 }
+                console.debug('handleSchedulePlannerPage, instructorRowIndex ' + instructorRowIndex);
+                g_isFirstLoadSuccess = true;
+                g_isSwitchCoursePageFinish = true;
+                // may be we need to change another way to identify whther the column is exist in the table
+                // the build scheuled page and enrolled page have different table title head
+                // the index begin from zero, however the length starts with 1 when the index is zero!!
+                // NOTE: in possible schedule page, if the user switch course, there is definitely one table body will change
+                // therefore, we need to get the table head total cell num, and each body num, if one of them is different, we need to invoke it again
+                // no found the instructor index, because the last cell is not instrctuor index
+                if (instructorRowIndex == tHeadtrElementCells.length - 1) {
+                    console.debug('handleSchedulePlannerPage, instructorRowIndex not found');
+                    showPotentialSchedule(tHeadElement, instructorRowIndex);
+                    return;
+                }
+                if (!g_isSwitchSheduleUpdateFinish) {
+                    console.debug("handleSchedulePlannerPage, g_isSwitchSheduleUpdateFinish ", g_isSwitchSheduleUpdateFinish);
+                    potentialSheduleCellAddData(tHeadElement);
+                    return;
+                }
+                console.debug("handleSchedulePlannerPage, showCurrentSchedule ");
+                showCurrentSchedule(tHeadElement, instructorRowIndex);
             }
-            console.debug('handleSchedulePlannerPage, instructorRowIndex ' + instructorRowIndex);
-            g_isFirstLoadSuccess = true;
-            g_isSwitchCoursePageFinish = true;
-            // may be we need to change another way to identify whther the column is exist in the table
-            // the build scheuled page and enrolled page have different table title head
-            // the index begin from zero, however the length starts with 1 when the index is zero!!
-            // NOTE: in possible schedule page, if the user switch course, there is definitely one table body will change
-            // therefore, we need to get the table head total cell num, and each body num, if one of them is different, we need to invoke it again
-            // no found the instructor index, because the last cell is not instrctuor index
-            if (instructorRowIndex == tHeadtrElementCells.length - 1) {
-                console.debug('handleSchedulePlannerPage, instructorRowIndex not found');
-                showPotentialSchedule(tHeadElement, instructorRowIndex);
-                return;
-            }
-            if (!g_isSwitchSheduleUpdateFinish) {
-                console.debug("handleSchedulePlannerPage, g_isSwitchSheduleUpdateFinish ", g_isSwitchSheduleUpdateFinish);
-                potentialSheduleCellAddData(tHeadElement);
-                return;
-            }
-            console.debug("handleSchedulePlannerPage, showCurrentSchedule ");
-            showCurrentSchedule(tHeadElement, instructorRowIndex);
+
         } else {
             console.debug("not in schedule planner page");
         }
