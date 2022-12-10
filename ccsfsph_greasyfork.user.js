@@ -168,15 +168,15 @@
                 }
             }
             cb &&
-                cb.call(
-                    this,
-                    status,
-                    status > 0
-                        ? null
-                        : value
-                            ? value.slice(value.indexOf(this.timeSign) + this.timeSign.length)
-                            : null,
-                );
+            cb.call(
+                this,
+                status,
+                status > 0
+                    ? null
+                    : value
+                        ? value.slice(value.indexOf(this.timeSign) + this.timeSign.length)
+                        : null,
+            );
         },
     };
     // Test code
@@ -305,6 +305,7 @@
         if (userDisplayURL.indexOf('/options') !== -1 || userDisplayURL.indexOf('/currentschedule') !== -1 || userDisplayURL.endsWith('/cart') || userDisplayURL.endsWith('ccsf.collegescheduler.com/') || userDisplayURL.endsWith('ccsf.collegescheduler.com')) {
             PAGE = PAGE_CURRENT_SCHEDULE;
         }
+        // https://ccsf.collegescheduler.com/terms/Spring%202023/courses/1581937
         else if (userDisplayURL.indexOf('/courses') !== -1) {
             PAGE = PAGE_COURSE_SCHEDULE;
         }
@@ -312,6 +313,7 @@
         else if (userDisplayURL.indexOf('/schedules/') !== -1) {
             PAGE = PAGE_POTENTIAL_SCHEDULE;
         }
+        // didn't match
         else {
             PAGE = PAGE_UNKNOWN;
         }
@@ -337,7 +339,7 @@
 
     /**
      * convert professor name from format like `Lastname, Firstname` to `firstname-lastname`
-     * 
+     *
      * @param {String} professorName
      * @returns reversed name
      */
@@ -403,15 +405,15 @@
                 }
                 /**
                  * the example of the html template
-                 * 
+                 *
                  *   <div class="field field--name-field-email field--type-email field--label-above">
-    <div class="field__label">Email</div>
-              <div class="field__item"><a href="mailto:cconner@ccsf.edu">cconner@ccsf.edu</a></div>
-          </div>
+                 <div class="field__label">Email</div>
+                 <div class="field__item"><a href="mailto:cconner@ccsf.edu">cconner@ccsf.edu</a></div>
+                 </div>
 
-                    well, how can get the `<a href="mailto:cconner@ccsf.edu">cconner@ccsf.edu</a>`
+                 well, how can get the `<a href="mailto:cconner@ccsf.edu">cconner@ccsf.edu</a>`
                  */
-                // TODO one day, I will use the regex to do it, haha
+                    // TODO one day, I will use the regex to do it, haha
                 let emailTextSymbol = '<div class="field__label">Email</div>';
                 let emailTextSymbolLength = emailTextSymbol.length;
                 console.debug('getCCSFTeacherInfo, emailTextSymbolLength ', emailTextSymbolLength);
@@ -439,6 +441,7 @@
             }
         });
     }
+
     // getCCSFTeacherInfo('Conner, Constance')
     // getCCSFTeacherInfo('Legaspi, Erlinda')
     // getCCSFTeacherInfo('potter, jonathan')
@@ -488,11 +491,9 @@
         // < 3.3: blue
         if (avgRating >= 4.1) {
             avgRating = '<span style="color: red;">' + avgRating + '</span>';
-        }
-        else if (avgRating >= 3.3) {
+        } else if (avgRating >= 3.3) {
             avgRating = '<span style="color: green;">' + avgRating + '</span>';
-        }
-        else {
+        } else {
             avgRating = '<span style="color: blue;">' + avgRating + '</span>';
         }
         return '<br>' + avgRating + ' / 5<br>' + numRatings + ' ratings';
@@ -698,6 +699,7 @@
             }
         }
     }
+
     // ---------------------- Schedule Planner function end ----------------------
 
     // ====================== global functions end ======================
