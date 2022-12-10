@@ -485,7 +485,8 @@
     }
 
     function getProfessRateShowFormat(avgRating, numRatings) {
-        // TODO: strengthen the avgRating to use different color
+        console.debug(`getProfessRateShowFormat, avgRating ${avgRating}, numRatings ${numRatings}`)
+        // TODO we should also use the numRatings, not only the avgRating
         // >= 4.8: orange
         // 4.0 - 4.7: purple
         // 3.0 - 3.9: blue
@@ -502,7 +503,13 @@
         } else {
             avgRating = '<span style="color: grey;">' + avgRating + '</span>';
         }
-        return '<br>' + avgRating + ' / 5<br>' + numRatings + ' ratings';
+        let showScores = avgRating + ' / 5';
+        if (numRatings <= 0) {
+            showScores = 'N/A';
+        }
+        let htmlFormat = '<br>' + showScores + '<br>' + numRatings + ' Ratings';
+        console.debug("getProfessRateShowFormat, htmlFormat ", htmlFormat)
+        return htmlFormat;
     }
 
     // TODO: CACHE THE TEACHER ALREADY SEARCH ON LOCAL STORAGE: boost next redenr speed
