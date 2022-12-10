@@ -318,6 +318,10 @@
         console.debug("updateGlobalPageByHref, PAGE ", PAGE)
     }
 
+    function isTablePage() {
+        return PAGE === PAGE_POTENTIAL_SCHEDULE || PAGE === PAGE_CURRENT_SCHEDULE || PAGE === PAGE_COURSE_SCHEDULE;
+    }
+
     function updateUserSwitchPotentialSchedulePage() {
         let locationChangeFlag = isLocationChange();
         console.debug("updateUserSwitchPotentialSchedulePage, locationChangeFlag ", locationChangeFlag);
@@ -722,7 +726,7 @@ You can also contact us at: ccsfsph@gmail.com
         if (g_pageLoadFinish) {
             console.debug("page load finish, begin to render page");
             updateUserSwitchPotentialSchedulePage();
-            let flag = (!g_isFirstLoadSuccess && (PAGE === PAGE_POTENTIAL_SCHEDULE || PAGE === PAGE_CURRENT_SCHEDULE || PAGE === PAGE_COURSE_SCHEDULE));
+            let flag = (!g_isFirstLoadSuccess && isTablePage());
             console.debug("g_pageLoadFinish, flag, ", flag);
 
             if (PAGE === PAGE_COURSE_SCHEDULE) {
@@ -753,7 +757,7 @@ You can also contact us at: ccsfsph@gmail.com
                 }
             }
 
-            if (!g_isUpdateLocationChangeFinish || flag || !g_isSwitchCoursePageFinish) {
+            if (isTablePage() && !g_isUpdateLocationChangeFinish || flag || !g_isSwitchCoursePageFinish) {
                 handleSchedulePlannerPage();
             }
         } else {
