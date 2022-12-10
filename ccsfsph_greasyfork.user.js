@@ -764,19 +764,21 @@ You can also contact us at: ccsfsph@gmail.com
                     if (switchTabListElements) {
                         let switchTabListElement = switchTabListElements[0];
                         console.debug("setInterval, switchTabListElement ", switchTabListElement)
-                        let switchTabListLiElements = switchTabListElement.getElementsByTagName("li")
-                        console.debug("setInterval, switchTabListLiElements ", switchTabListLiElements)
-                        if (switchTabListLiElements) {
-                            for (let switchTabListLiElement of switchTabListLiElements) {
-                                console.debug("setInterval, switchTabListLiElement ", switchTabListLiElement)
-                                switchTabListLiElement.onclick = function () {
-                                    console.debug("setInterval, switchTabListLiElement.onclick")
-                                    g_isSwitchCoursePageFinish = false;
-                                    console.debug("setInterval, switchTabListLiElement.onclick, g_isSwitchCoursePageFinish = false")
+                        if (switchTabListElement) {
+                            let switchTabListLiElements = switchTabListElement.getElementsByTagName("li")
+                            console.debug("setInterval, switchTabListLiElements ", switchTabListLiElements)
+                            if (switchTabListLiElements) {
+                                for (let switchTabListLiElement of switchTabListLiElements) {
+                                    console.debug("setInterval, switchTabListLiElement ", switchTabListLiElement)
+                                    switchTabListLiElement.onclick = function () {
+                                        console.debug("setInterval, switchTabListLiElement.onclick")
+                                        g_isSwitchCoursePageFinish = false;
+                                        console.debug("setInterval, switchTabListLiElement.onclick, g_isSwitchCoursePageFinish = false")
+                                    }
                                 }
+                                switchTabElementInitResult = true;
+                                console.debug("setInterval, switchTabElementInitResult = true")
                             }
-                            switchTabElementInitResult = true;
-                            console.debug("setInterval, switchTabElementInitResult = true")
                         }
                     }
 
