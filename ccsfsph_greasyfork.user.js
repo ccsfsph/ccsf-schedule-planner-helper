@@ -250,6 +250,7 @@
     var g_tableHeadSeatsOpenIndex = -1;
     // it seems the page use lazy load, which will cause the table didn't render soon, and cause not find the element.
     var g_isFirstLoadSuccess = false;
+    var g_initCoursePageEventFlag = false;
 
     // ---------------------- variables for Schedule Plnnaer end ----------------------
 
@@ -280,6 +281,10 @@
         if (flag) {
             g_isUpdateLocationChangeFinish = false;
             console.debug("isLocationChange, location change");
+        }
+        if (flag && PAGE === PAGE_COURSE_SCHEDULE) {
+            console.debug("isLocationChange, flag && PAGE === PAGE_COURSE_SCHEDULE")
+            g_initCoursePageEventFlag = false;
         }
         return flag;
     }
@@ -711,6 +716,35 @@ You can also contact us at: ccsfsph@gmail.com
             updateUserSwitchPotentialSchedulePage();
             let flag = (!g_isFirstLoadSuccess && (PAGE === PAGE_POTENTIAL_SCHEDULE || PAGE === PAGE_CURRENT_SCHEDULE || PAGE === PAGE_COURSE_SCHEDULE));
             console.debug("g_pageLoadFinish, flag, ", flag);
+
+            if (PAGE === PAGE_COURSE_SCHEDULE) {
+                console.debug("setInterval, PAGE === PAGE_COURSE_SCHEDULE, g_initCoursePageEventFlag, ", g_initCoursePageEventFlag)
+                if (!g_initCoursePageEventFlag) {
+                    let barElements = document.getElementsByClassName('css-10ym66b-pagerCss');
+                    console.debug("setInterval, barElements ", barElements);
+                    if (barElements) {
+                        let barElement = barElements[0];
+                        console.debug("setInterval, barElement ", barElement);
+                        if (barElement) {
+                            let buttonElements = barElement.getElementsByTagName('button');
+                            console.debug("setInterval, buttonElements ", buttonElements);
+                            if (buttonElements) {
+                                for (let buttonElement of buttonElements) {
+                                    console.debug("setInterval, buttonElement ", buttonElement)
+                                    buttonElement.onclick = function() {
+                                        console.debug("setInterval, buttonElement.onclick")
+                                        g_isSwitchCoursePageFinish = false;
+                                        console.debug("setInterval, g_isSwitchCoursePageFinish = false")
+                                    }
+                                }
+                                g_initCoursePageEventFlag = true;
+                                console.debug("setInterval, g_initCoursePageEventFlag = true")
+                            }
+                        }
+                    }
+                }
+            }
+
             if (!g_isUpdateLocationChangeFinish || flag || !g_isSwitchCoursePageFinish) {
                 handleSchedulePlannerPage();
             }
@@ -741,6 +775,7 @@ You can also contact us at: ccsfsph@gmail.com
         let instructorIndex = -1;
         let tableHeadthRowsThElements = tableHeadthRows.getElementsByTagName('th');
         let tableHeadTotalCell = tableHeadthRowsThElements.length;
+        let instrcutorEmailCellIndex = -1;
         console.debug('showPotentialScheduleSwitchPage, tableHeadTotalCell ', tableHeadTotalCell);
         for (let tableHeadthRow of tableHeadthRowsThElements) {
             tableHeadColumnindex++;
@@ -751,21 +786,32 @@ You can also contact us at: ccsfsph@gmail.com
             if (tableHeadthRow.innerText === 'Instructor') {
                 instructorIndex = tableHeadColumnindex;
             }
+            if (tableHeadthRow.innerText === 'Instructor Email') {
+                instrcutorEmailCellIndex = tableHeadColumnindex;
+            }
         }
         console.debug('showPotentialSchedule, instructorIndex', instructorIndex);
 
-        tableHeadTotalCell += 1;
-        // Add after `Instructor` column
-        let emailCapacityCell = tableHeadthRows.insertCell(instructorIndex + 1);
-        console.debug('showPotentialSchedule, emailCapacityCell', emailCapacityCell);
-        emailCapacityCell.innerText = 'Instructor Email';
-        g_instructorEmailColumnIndex = emailCapacityCell.cellIndex;
-        g_tableHeadTotalCell = tableHeadTotalCell;
-        g_instructorColumnIndex = instructorIndex;
-        console.debug("showPotentialSchedule, g_tableHeadTotalCell, ", g_tableHeadTotalCell);
-        console.debug("showPotentialSchedule, g_instructorEmailColumnIndex, ", g_instructorEmailColumnIndex);
+        if (instrcutorEmailCellIndex === -1) {
+            tableHeadTotalCell += 1;
+            // Add after `Instructor` column
+            // NOTE: since the appendChild will at to the last, but insertCell cannot assign the tag name
+            // let emailCapacityCell = tableHeadthRows.insertCell(instructorIndex + 1);
+            let emailCapacityCell = document.createElement('th');
+            emailCapacityCell.index = instructorIndex + 1;
+            emailCapacityCell.setAttribute('class', 'css-17qtf8g-hideOnMobileCss')
+            tableHeadthRows.appendChild(emailCapacityCell)
+            console.debug('showPotentialSchedule, emailCapacityCell', emailCapacityCell);
+            emailCapacityCell.innerText = 'Instructor Email';
+            g_instructorEmailColumnIndex = emailCapacityCell.cellIndex;
+            g_tableHeadTotalCell = tableHeadTotalCell;
+            g_instructorColumnIndex = instructorIndex;
+            console.debug("showPotentialSchedule, g_tableHeadTotalCell, ", g_tableHeadTotalCell);
+            console.debug("showPotentialSchedule, g_instructorEmailColumnIndex, ", g_instructorEmailColumnIndex);
+        }
+
         // add instructor email here
-        instructorEmailCellAddData(tHeadElement);
+        instructorEmailCellAddData(tHeadElement, instrcutorEmailCellIndex);
 
         for (let tableBodyElement of tableBodyElements) {
             console.debug('showCurrentSchedule, tableBodyElement ', tableBodyElement);
@@ -849,7 +895,7 @@ You can also contact us at: ccsfsph@gmail.com
         potentialSheduleCellAddData(tHeadElement)
     }
 
-    function instructorEmailCellAddData(tHeadElement) {
+    function instructorEmailCellAddData(tHeadElement, instrcutorEmailCellIndex) {
         g_isSwitchSheduleUpdateFinish = true;
         let tableHeadTotalCell = g_tableHeadTotalCell;
         let instructorEmailColumnIndex = g_instructorEmailColumnIndex
@@ -877,7 +923,10 @@ You can also contact us at: ccsfsph@gmail.com
             let instructorName = instructorColumnCell.innerText;
             console.debug('instructorName, ', instructorName);
 
-            let instructorEmailCellValueElement = tableElementBodyElementTrElement.insertCell(instructorEmailColumnIndex);
+            let instructorEmailCellValueElement = document.createElement('td');
+            instructorEmailCellValueElement.setAttribute('class', 'css-1p12g40-cellCss-hideOnMobileCss')
+            tableElementBodyElementTrElement.appendChild(instructorEmailCellValueElement)
+            // let instructorEmailCellValueElement = tableElementBodyElementTrElement.insertCell(instructorEmailColumnIndex);
             console.debug('showPotentialSchedule, instructorEmailCellValueElement ', instructorEmailCellValueElement);
             instructorEmailCellValueElement.innerText = '';
 
@@ -1016,7 +1065,6 @@ You can also contact us at: ccsfsph@gmail.com
             if (!tHeadElement) {
                 return console.debug('handleSchedulePlannerPage, no tHeadElement found');
             }
-            g_isSwitchCoursePageFinish = true;
             console.debug('handleSchedulePlannerPage, tHeadElement ', tHeadElement);
             let tHeadtrElement = tHeadElement.rows[0];
             console.debug('handleSchedulePlannerPage, tHeadtrElement ', tHeadtrElement);
@@ -1038,6 +1086,7 @@ You can also contact us at: ccsfsph@gmail.com
             }
             console.debug('handleSchedulePlannerPage, instructorRowIndex ' + instructorRowIndex);
             g_isFirstLoadSuccess = true;
+            g_isSwitchCoursePageFinish = true;
             // may be we need to change another way to identify whther the column is exist in the table
             // the build scheuled page and enrolled page have different table title head
             // the index begin from zero, however the length starts with 1 when the index is zero!!
@@ -1054,6 +1103,7 @@ You can also contact us at: ccsfsph@gmail.com
                 potentialSheduleCellAddData(tHeadElement);
                 return;
             }
+            console.debug("handleSchedulePlannerPage, showCurrentSchedule ");
             showCurrentSchedule(tHeadElement, instructorRowIndex);
         } else {
             console.debug("not in schedule planner page");
