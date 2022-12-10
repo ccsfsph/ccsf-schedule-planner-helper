@@ -224,6 +224,9 @@
     const TABLE_DATA_TD_CELL_CLASS_NAME = 'css-1p12g40-cellCss-hideOnMobileCss';
     // for `Sections` page bar name
     const TABLE_SWITCH_PAGE_BAR_CLASS_NAME = 'css-10ym66b-pagerCss';
+    // `/courses/xxx` page for advanced filters
+    const ADVANCED_FILTER_SAVE_BUTTON_CLASS_NAME = 'css-1m89de3-hoverStyles-hoverStyles-defaultStyle-centerBlockCss';
+    const ADVANCED_FILTER_CLOSE_BUTTON_CLASS_NAME = 'css-vqzzza-closeCss';
     // ---------------------- constants for Schedule Plnnaer end ----------------------
 
     // ====================== global constants end ======================
@@ -756,6 +759,8 @@ You can also contact us at: ccsfsph@gmail.com
                 if (!g_initCoursePageEventFlag) {
                     let barElementInitResult = false;
                     let switchTabElementInitResult = false;
+                    let advancedFilterSaveButtonInitResult = false;
+                    let advancedFilterCloseButtonInitResult = false;
 
                     let barElements = document.getElementsByClassName(TABLE_SWITCH_PAGE_BAR_CLASS_NAME);
                     console.debug("setInterval, barElements ", barElements);
@@ -807,7 +812,49 @@ You can also contact us at: ccsfsph@gmail.com
                         }
                     }
 
-                    g_initCoursePageEventFlag = barElementInitResult && switchTabElementInitResult;
+                    // Advanced Filters
+                    // <button aria-label="" class=" css-1m89de3-hoverStyles-hoverStyles-defaultStyle-centerBlockCss" type="submit"><span aria-hidden="true" class="fa fa-check  css-i5lou9-iconCss"></span><span class="css-1q6wcnd-innerStyle">Save Filters</span></button>
+                    let advancedFiltersElements = document.getElementsByClassName(ADVANCED_FILTER_SAVE_BUTTON_CLASS_NAME);
+                    console.debug("setInterval, advancedFiltersElements ", advancedFiltersElements)
+                    if (advancedFiltersElements) {
+                        let advancedFiltersElement = advancedFiltersElements[0];
+                        console.debug("setInterval, advancedFiltersElement ", advancedFiltersElement)
+                        if (advancedFiltersElement) {
+                            advancedFiltersElement.onclick = function () {
+                                console.debug("setInterval, advancedFiltersElement.onclick")
+                                g_isSwitchCoursePageFinish = false;
+                                console.debug("setInterval, switchTabListLiElement.onclick, g_isSwitchCoursePageFinish = false")
+                                // when click the switch tab, the switch page button event will be removed, since we need to rerender again!
+                                g_initCoursePageEventFlag = false;
+                                console.debug("setInterval, advancedFiltersElement.onclick, g_initCoursePageEventFlag = false");
+                            }
+                            advancedFilterSaveButtonInitResult = true;
+                            console.debug("setInterval, advancedFilterSaveButtonInitResult = true")
+                        }
+                    }
+
+                    // Advanced Filter close button
+                    // <button type="button" aria-label="Close Advanced Filters Panel" class="css-vqzzza-closeCss"><span aria-hidden="true">×</span></button>
+                    let advancedFiltersCloseElements = document.getElementsByClassName(ADVANCED_FILTER_CLOSE_BUTTON_CLASS_NAME);
+                    console.debug("setInterval, advancedFiltersCloseElements ", advancedFiltersCloseElements)
+                    if (advancedFiltersCloseElements) {
+                        let advancedFiltersCloseElement = advancedFiltersCloseElements[0];
+                        console.debug("setInterval, advancedFiltersCloseElement ", advancedFiltersCloseElement)
+                        if (advancedFiltersCloseElement) {
+                            advancedFiltersCloseElement.onclick = function () {
+                                console.debug("setInterval, advancedFiltersCloseElement.onclick")
+                                g_isSwitchCoursePageFinish = false;
+                                console.debug("setInterval, advancedFiltersCloseElement.onclick, g_isSwitchCoursePageFinish = false")
+                                // when click the switch tab, the switch page button event will be removed, since we need to rerender again!
+                                g_initCoursePageEventFlag = false;
+                                console.debug("setInterval, advancedFiltersCloseElement.onclick, g_initCoursePageEventFlag = false");
+                            }
+                            advancedFilterCloseButtonInitResult = true;
+                            console.debug("setInterval, advancedFilterCloseButtonInitResult = true")
+                        }
+                    }
+
+                    g_initCoursePageEventFlag = barElementInitResult && switchTabElementInitResult && advancedFilterSaveButtonInitResult && advancedFilterCloseButtonInitResult;
                 }
             }
 
