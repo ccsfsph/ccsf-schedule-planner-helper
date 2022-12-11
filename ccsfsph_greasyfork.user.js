@@ -382,10 +382,20 @@
         return getRequestURLProtocol() + 'www.ccsf.edu/directory/' + reverseProfessorName(professorName);
     }
 
+    // we found some information from third-party may be incorrect.
+    // besides, we can also collect some useful information from here, not query form the third-part to make it faster
+    const CCSF_INSTRUCTOR_EMAIL = {
+        // origin is form https://www.ccsf.edu/directory/erlinda-legaspi but it's incorrect. we found a new one on homepage: https://sites.google.com/mail.ccsf.edu/legaspi-english/home
+        'Legaspi, Erlinda': 'erlinda.legaspi@mail.ccsf.edu',
+        'Nguyen, Sean': 'snguyen@ccsf.edu',
+    }
+
     function getCCSFTeacherInfo(professorName, professorCellElement) {
+        console.debug("getCCSFTeacherInfo, professorName ", professorName)
         // In most cases, the teacher's email will not change. We should cache it permantly
+        console.debug('getCCSFTeacherInfo, try to get from constant, ', CCSF_INSTRUCTOR_EMAIL[professorName]);
         let cacheKeyName = professorName + '/email';
-        let cacheInstrucotEmail = localStorage.getItem(cacheKeyName)
+        let cacheInstrucotEmail = CCSF_INSTRUCTOR_EMAIL[professorName] || localStorage.getItem(cacheKeyName)
         if (cacheInstrucotEmail) {
             professorCellElement.innerHTML = getEmailHTML(cacheInstrucotEmail);
             return;
