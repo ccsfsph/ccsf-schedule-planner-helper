@@ -388,6 +388,7 @@
         // origin is form https://www.ccsf.edu/directory/erlinda-legaspi but it's incorrect. we found a new one on homepage: https://sites.google.com/mail.ccsf.edu/legaspi-english/home
         'Legaspi, Erlinda': 'erlinda.legaspi@mail.ccsf.edu',
         'Nguyen, Sean': 'snguyen@ccsf.edu',
+        'Potter, Jonathan': 'jpotter@ccsf.edu',
     }
 
     function getCCSFTeacherInfo(professorName, professorCellElement) {
