@@ -526,14 +526,16 @@
         return htmlFormat;
     }
 
-    // TODO: CACHE THE TEACHER ALREADY SEARCH ON LOCAL STORAGE: boost next redenr speed
     function searchProfessorByRMP(professorName, changeHerfElement) {
         console.debug('invoke searchProfessorByRMP');
         console.debug('searchProfessorByRMP, professorName ', professorName);
         console.debug('searchProfessorByRMP, changeHerfElement ', changeHerfElement);
 
+        let requestURL = getRMPSearchProfessorAPI();
+        console.debug('searchProfessorByRMP, requestURL ', requestURL);
         let localStorageProfessorPropertyJSON = localStorage.getItem(professorName);
         console.debug('searchProfessorByRMP, localStorageProfessorPropertyJSON ', localStorageProfessorPropertyJSON);
+
         if (localStorageProfessorPropertyJSON) {
             console.debug('searchProfessorByRMP, nice, found the data from localStorage, not invoke from third-party!');
             let localStorageProfessorProperty = JSON.parse(localStorageProfessorPropertyJSON);
@@ -552,7 +554,7 @@
                 let searchProfessorDetailData = buildRMPGetProfessorDetailQuery(id);
                 GM_xmlhttpRequest({
                     method: "POST",
-                    url: requetURL,
+                    url: requestURL,
                     headers: {
                         'Authorization': RMP_AUTHORIZATION_KEY,
                         'Content-Type': 'text/plain',
@@ -603,13 +605,11 @@
                 return;
             }
         }
-        let requetURL = getRMPSearchProfessorAPI();
-        console.debug('searchProfessorByRMP, requetURL ', requetURL);
         let requestData = buildRMPSearchProfessorQuery(professorName);
         console.debug('searchProfessorByRMP, requestData ', requestData);
         GM_xmlhttpRequest({
             method: "POST",
-            url: requetURL,
+            url: requestURL,
             headers: {
                 'Authorization': RMP_AUTHORIZATION_KEY,
                 'Content-Type': 'text/plain',
@@ -664,7 +664,7 @@
                 let searchProfessorDetailData = buildRMPGetProfessorDetailQuery(id);
                 GM_xmlhttpRequest({
                     method: "POST",
-                    url: requetURL,
+                    url: requestURL,
                     headers: {
                         'Authorization': RMP_AUTHORIZATION_KEY,
                         'Content-Type': 'text/plain',
