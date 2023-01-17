@@ -588,7 +588,7 @@
 
                         store.set(id, jsonText);
 
-                        setInstructorElement(professorName, changeHerfElement, professionPageURL, getProfessRateShowFormat(avgRating, numRatings));
+                        setInstructorElement(professorName, changeHerfElement, url, getProfessRateShowFormat(avgRating, numRatings));
                     }
                 });
                 return;
