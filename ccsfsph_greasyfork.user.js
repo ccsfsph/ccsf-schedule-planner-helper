@@ -526,6 +526,76 @@
         return htmlFormat;
     }
 
+    function searchProfessorDataHandler(teacher, professorName, changeHerfElement, requestURL) {
+        let teacherProperty = teacher.node;
+        console.debug('searchProfessorByRMP, teacherProperty ', teacherProperty);
+        // legacyId: 2445727
+        let legacyId = teacherProperty.legacyId;
+        console.debug('searchProfessorByRMP, legacyId ', legacyId);
+        // department: "Computer amp Informational Tech."
+        let department = teacherProperty.department;
+        console.debug('searchProfessorByRMP, department ', department);
+        // firstName: "Jonathan"
+        let firstName = teacherProperty.firstName;
+        console.debug('searchProfessorByRMP, firstName ', firstName);
+        // lastName: "Potter"
+        let lastName = teacherProperty.lastName;
+        console.debug('searchProfessorByRMP, lastName ', lastName);
+        // id: "VGVhY2hlci0yNDQ1NzI3"
+        let id = teacherProperty.id;
+        console.debug('searchProfessorByRMP, id ', id);
+
+        let professionPageURL = getProfessorsURL(legacyId);
+        console.debug('searchProfessorByRMP, professionPageURL ', professionPageURL);
+
+        localStorage.setItem(professorName, JSON.stringify(teacherProperty));
+
+        setInstructorElement(professorName, changeHerfElement, professionPageURL);
+
+        // use the id to get the professor detail
+        // TODO get from cache first, maybe have cache from local
+        let searchProfessorDetailData = buildRMPGetProfessorDetailQuery(id);
+        GM_xmlhttpRequest({
+            method: "POST",
+            url: requestURL,
+            headers: {
+                'Authorization': RMP_AUTHORIZATION_KEY,
+                'Content-Type': 'text/plain',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.56',
+                'Accept': 'application/json',
+            },
+            data: searchProfessorDetailData,
+            onload: function (response) {
+                console.debug('searchProfessorByRMP, professorDetail, response ', response);
+                let jsonText = response.responseText;
+                console.debug('searchProfessorByRMP, professorDetail, jsonText ', jsonText);
+                let dataObj = JSON.parse(jsonText);
+                console.debug('searchProfessorByRMP, professorDetail, dataObj ', dataObj);
+                let professorDetail = dataObj.data.node;
+                console.debug('searchProfessorByRMP, professorDetail ', professorDetail);
+
+                if (!professorDetail) {
+                    console.debug('searchProfessorByRMP, professorDetail is null ', professorDetail);
+                    return;
+                }
+
+                // avgRating: 2.3
+                let avgRating = professorDetail.avgRating;
+                console.debug('searchProfessorByRMP, professorDetail, avgRating', avgRating);
+                // avgDifficulty: 2
+                let avgDifficulty = professorDetail.avgDifficulty;
+                console.debug('searchProfessorByRMP, professorDetail, avgDifficulty', avgDifficulty);
+                // numRatings: 4
+                let numRatings = professorDetail.numRatings;
+                console.debug('searchProfessorByRMP, professorDetail, numRatings', numRatings);
+
+                store.set(id, jsonText);
+
+                setInstructorElement(professorName, changeHerfElement, professionPageURL, getProfessRateShowFormat(avgRating, numRatings));
+            }
+        })
+    }
+
     function searchProfessorByRMP(professorName, changeHerfElement) {
         console.debug('invoke searchProfessorByRMP');
         console.debug('searchProfessorByRMP, professorName ', professorName);
@@ -605,7 +675,20 @@
                 return;
             }
         }
-        let requestData = buildRMPSearchProfessorQuery(professorName);
+
+        let searchProfessorName = professorName;
+        let ignoreMultiResult = false;
+
+        if (professorName === 'Bacsierra, Benjamin') {
+            searchProfessorName = 'B Bacsierra';
+        }
+
+        if (professorName !== searchProfessorName) {
+            ignoreMultiResult = true
+        }
+
+        console.debug('searchProfessorByRMP, searchProfessorName ', searchProfessorName)
+        let requestData = buildRMPSearchProfessorQuery(searchProfessorName);
         console.debug('searchProfessorByRMP, requestData ', requestData);
         GM_xmlhttpRequest({
             method: "POST",
@@ -626,83 +709,123 @@
                 let teachers = dataObj.data.newSearch.teachers.edges;
                 console.debug('searchProfessorByRMP, teachers ', teachers);
 
-                // TODO: when return multi teachers, the result show on the page is not always correct!
-                let teacher = teachers[0];
+                let teacher;
+                if (teachers.length > 1 && !ignoreMultiResult) {
+                    console.warn('searchProfessorByRMP, teachers.length > 1, teachers ', teachers);
+                    for (let t of teachers) {
+                        console.debug('searchProfessorByRMP, strictCheckName, t: ', t);
+                        let resultProfessorFirstName = t.node.firstName
+                        let resultProfessorLastName = t.node.lastName
+                        console.debug(`searchProfessorByRMP, strictCheckName, resultProfessorFirstName: ${resultProfessorFirstName}, resultProfessorLastName: ${resultProfessorLastName}`)
+                        if
+                        (
+                            resultProfessorLastName.toLowerCase().trim() === searchProfessorName.split(',')[0].toLowerCase().trim()
+                            &&
+                            resultProfessorFirstName.toLowerCase().trim() === searchProfessorName.split(',')[1].toLowerCase().trim()
+                        ) {
+                            console.debug(`searchProfessorByRMP, strictCheckName, found! t: ${t}`)
+                            teacher = t;
+                            break;
+                        }
+                    }
+
+                    if (!teacher) {
+                        return;
+                    }
+                }
+
+                if (teachers.length == 1) {
+                    teacher = teachers[0];
+                }
+
                 console.debug('searchProfessorByRMP, teacher ', teacher);
                 // cannot search any info for the teacher in RMP
                 if (!teacher) {
-                    console.debug('searchProfessorByRMP, cannot search any info for the teacher in RMP');
-                    return;
-                }
-                let teacherProperty = teacher.node;
-                console.debug('searchProfessorByRMP, teacherProperty ', teacherProperty);
-                // legacyId: 2445727
-                let legacyId = teacherProperty.legacyId;
-                console.debug('searchProfessorByRMP, legacyId ', legacyId);
-                // department: "Computer amp Informational Tech."
-                let department = teacherProperty.department;
-                console.debug('searchProfessorByRMP, department ', department);
-                // firstName: "Jonathan"
-                let firstName = teacherProperty.firstName;
-                console.debug('searchProfessorByRMP, firstName ', firstName);
-                // lastName: "Potter"
-                let lastName = teacherProperty.lastName;
-                console.debug('searchProfessorByRMP, lastName ', lastName);
-                // id: "VGVhY2hlci0yNDQ1NzI3"
-                let id = teacherProperty.id;
-                console.debug('searchProfessorByRMP, id ', id);
+                    console.warn(`searchProfessorByRMP, cannot search any info for teacher: ${professorName}`);
+                    console.log('searchProfessorByRMP, try to search by LastName')
 
-                let professionPageURL = getProfessorsURL(legacyId);
-                console.debug('searchProfessorByRMP, professionPageURL ', professionPageURL);
-
-                localStorage.setItem(professorName, JSON.stringify(teacherProperty));
-
-                setInstructorElement(professorName, changeHerfElement, professionPageURL);
-
-                // use the id to get the professor detail
-                // TODO get from cache first, maybe have cache from local
-                let searchProfessorDetailData = buildRMPGetProfessorDetailQuery(id);
-                GM_xmlhttpRequest({
-                    method: "POST",
-                    url: requestURL,
-                    headers: {
-                        'Authorization': RMP_AUTHORIZATION_KEY,
-                        'Content-Type': 'text/plain',
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.56',
-                        'Accept': 'application/json',
-                    },
-                    data: searchProfessorDetailData,
-                    onload: function (response) {
-                        console.debug('searchProfessorByRMP, professorDetail, response ', response);
-                        let jsonText = response.responseText;
-                        console.debug('searchProfessorByRMP, professorDetail, jsonText ', jsonText);
-                        let dataObj = JSON.parse(jsonText);
-                        console.debug('searchProfessorByRMP, professorDetail, dataObj ', dataObj);
-                        let professorDetail = dataObj.data.node;
-                        console.debug('searchProfessorByRMP, professorDetail ', professorDetail);
-
-                        if (!professorDetail) {
-                            console.debug('searchProfessorByRMP, professorDetail is null ', professorDetail);
-                            return;
+                    let professorLastName = professorName.split(',')[0];
+                    
+                    console.debug('searchProfessorByRMP, professorLastName: ', professorLastName);
+                    requestData = buildRMPSearchProfessorQuery(professorLastName);
+                    GM_xmlhttpRequest({
+                        method: "POST",
+                        url: requestURL,
+                        headers: {
+                            'Authorization': RMP_AUTHORIZATION_KEY,
+                            'Content-Type': 'text/plain',
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.56',
+                            'Accept': 'application/json',
+                        },
+                        data: requestData,
+                        onload: function (response) {
+                            console.debug('searchProfessorByRMP2, response ', response);
+                            let jsonText = response.responseText;
+                            console.debug('searchProfessorByRMP2, jsonText ', jsonText);
+                            let dataObj = JSON.parse(jsonText);
+                            console.debug('searchProfessorByRMP2, dataObj ', dataObj);
+                            let teachers = dataObj.data.newSearch.teachers.edges;
+                            console.debug('searchProfessorByRMP2, teachers ', teachers);
+            
+                            if (teachers.length > 1) {
+                                console.warn('searchProfessorByRMP2, teachers.length > 1, teachers ', teachers);
+                                return;
+                            }
+                            teacher = teachers[0];
+                            console.debug('searchProfessorByRMP2, teacher ', teacher);
+                            // cannot search any info for the teacher in RMP
+                            if (!teacher) {
+                                console.warn(`searchProfessorByRMP2, cannot search any info for teacher: ${professorName}`);
+                                console.log('searchProfessorByRMP2, try to search by FirstName')
+            
+                                let professorFirstName = professorName.split(',')[1];
+                                console.debug('searchProfessorByRMP3, professorFirstName: ', professorFirstName);
+                                requestData = buildRMPSearchProfessorQuery(professorFirstName);
+                                GM_xmlhttpRequest({
+                                    method: "POST",
+                                    url: requestURL,
+                                    headers: {
+                                        'Authorization': RMP_AUTHORIZATION_KEY,
+                                        'Content-Type': 'text/plain',
+                                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 Edg/107.0.1418.56',
+                                        'Accept': 'application/json',
+                                    },
+                                    data: requestData,
+                                    onload: function (response) {
+                                        console.debug('searchProfessorByRMP3, response ', response);
+                                        let jsonText = response.responseText;
+                                        console.debug('searchProfessorByRMP3, jsonText ', jsonText);
+                                        let dataObj = JSON.parse(jsonText);
+                                        console.debug('searchProfessorByRMP3, dataObj ', dataObj);
+                                        let teachers = dataObj.data.newSearch.teachers.edges;
+                                        console.debug('searchProfessorByRMP3, teachers ', teachers);
+                        
+                                        if (teachers.length > 1) {
+                                            console.warn('searchProfessorByRMP3, teachers.length > 1, teachers ', teachers);
+                                            return;
+                                        }
+                                        teacher = teachers[0];
+                                        console.debug('searchProfessorByRMP3, teacher ', teacher);
+                                        // cannot search any info for the teacher in RMP
+                                        if (!teacher) {
+                                            console.warn(`searchProfessorByRMP3, cannot search any info for teacher: ${professorName}`);
+                                            console.log('searchProfessorByRMP3, try to search by LastName')
+                        
+                                            return;
+                                        }
+                                        searchProfessorDataHandler(teacher, professorName, changeHerfElement, requestURL)
+                                    }
+                                })
+                            } else {
+                                searchProfessorDataHandler(teacher, professorName, changeHerfElement, requestURL)
+                            }
                         }
-
-                        // avgRating: 2.3
-                        let avgRating = professorDetail.avgRating;
-                        console.debug('searchProfessorByRMP, professorDetail, avgRating', avgRating);
-                        // avgDifficulty: 2
-                        let avgDifficulty = professorDetail.avgDifficulty;
-                        console.debug('searchProfessorByRMP, professorDetail, avgDifficulty', avgDifficulty);
-                        // numRatings: 4
-                        let numRatings = professorDetail.numRatings;
-                        console.debug('searchProfessorByRMP, professorDetail, numRatings', numRatings);
-
-                        store.set(id, jsonText);
-
-                        setInstructorElement(professorName, changeHerfElement, professionPageURL, getProfessRateShowFormat(avgRating, numRatings));
-                    }
-                });
+                    })
+                } else {
+                    searchProfessorDataHandler(teacher, professorName, changeHerfElement, requestURL)
+                }
             }
-        });
+        })
     }
 
     //searchProfessorByRMP('Conner, Constance')
