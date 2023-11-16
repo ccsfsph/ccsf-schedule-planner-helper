@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CCSF Schedule Planner Helper
 // @namespace    https://github.com/ccsfsph/ccsf-schedule-planner-helper
-// @version      0.2.2
+// @version      0.2.3
 // @description  This userscript helps student to choose course more convenient, extenions: instructor email, instructor scores and rates from RMP for every table, and seats capacity in potential page table
 // @author       ccsfsph
 // @match        *://ccsf.collegescheduler.com/*
@@ -498,8 +498,8 @@
         }
     }
 
-    function getProfessRateShowFormat(avgRating, numRatings) {
-        console.debug(`getProfessRateShowFormat, avgRating ${avgRating}, numRatings ${numRatings}`)
+    function getProfessRateShowFormat(avgRating, numRatings, avgDifficulty) {
+        console.debug(`getProfessRateShowFormat, avgRating ${avgRating}, numRatings ${numRatings}, avgDifficulty ${avgDifficulty}`)
         // TODO we should also use the numRatings, not only the avgRating
         // >= 4.8: orange
         // 4.0 - 4.7: purple
@@ -521,7 +521,10 @@
         if (numRatings <= 0) {
             showScores = 'N/A';
         }
-        let htmlFormat = '<br>' + showScores + '<br>' + numRatings + ' Ratings';
+        if (avgDifficulty <= 0) {
+            avgDifficulty = 'N/A';
+        }
+        let htmlFormat = '<br>' + showScores + '<br>' + numRatings + ' Ratings' + '<br>' + avgDifficulty + ' Difficulty';
         console.debug("getProfessRateShowFormat, htmlFormat ", htmlFormat)
         return htmlFormat;
     }
@@ -591,7 +594,7 @@
 
                 store.set(id, jsonText);
 
-                setInstructorElement(professorName, changeHerfElement, professionPageURL, getProfessRateShowFormat(avgRating, numRatings));
+                setInstructorElement(professorName, changeHerfElement, professionPageURL, getProfessRateShowFormat(avgRating, numRatings, avgDifficulty));
             }
         })
     }
@@ -658,20 +661,27 @@
 
                         store.set(id, jsonText);
 
-                        setInstructorElement(professorName, changeHerfElement, url, getProfessRateShowFormat(avgRating, numRatings));
+                        setInstructorElement(professorName, changeHerfElement, url, getProfessRateShowFormat(avgRating, numRatings, avgDifficulty));
                     }
                 });
                 return;
             } else {
                 let localStorageProfessorDetailJSON = storeProfessorDetail.value;
                 console.debug('searchProfessorByRMP, localStorageProfessorDetailJSON ', localStorageProfessorDetailJSON);
+
                 let localStorageProfessorDetail = JSON.parse(localStorageProfessorDetailJSON);
                 console.debug('searchProfessorByRMP, localStorageProfessorDetail ', localStorageProfessorDetail);
+
                 let avgRating = localStorageProfessorDetail.data.node.avgRating;
                 console.debug('searchProfessorByRMP, avgRating ', avgRating);
+
+                let avgDifficulty = localStorageProfessorDetail.data.node.avgDifficulty;
+                console.debug('searchProfessorByRMP, avgDifficulty ', avgDifficulty);
+
                 let numRatings = localStorageProfessorDetail.data.node.numRatings;
                 console.debug('searchProfessorByRMP, numRatings ', numRatings);
-                setInstructorElement(professorName, changeHerfElement, url, getProfessRateShowFormat(avgRating, numRatings));
+
+                setInstructorElement(professorName, changeHerfElement, url, getProfessRateShowFormat(avgRating, numRatings, avgDifficulty));
                 return;
             }
         }
