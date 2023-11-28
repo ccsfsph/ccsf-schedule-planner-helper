@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CCSF Schedule Planner Helper
 // @namespace    https://github.com/ccsfsph/ccsf-schedule-planner-helper
-// @version      0.3.0
+// @version      0.3.1
 // @description  This userscript helps student to choose course more convenient, extenions: instructor email, instructor scores and rates from RMP for every table, and seats capacity in potential page table
 // @author       ccsfsph
 // @match        *://ccsf.collegescheduler.com/*
@@ -1156,11 +1156,21 @@ You can also contact us at: ccsfsph@gmail.com
                 console.debug('showCurrentSchedule, crnElement', crnElement)
                 console.debug('showCurrentSchedule, crnElement.innerText', crnElement.innerText)
                 console.debug('showCurrentSchedule, crnElement.innerText', getRegBlocksByCRN(crnElement.innerText))
-                let seatsCapacity = getRegBlocksByCRN(crnElement.innerText).seatsCapacity
+
+                let regBlocks = getRegBlocksByCRN(crnElement.innerText)
+                console.debug('showCurrentSchedule, regBlocks', regBlocks)
+
+                let seatsCapacity = regBlocks.seatsCapacity
                 console.debug('showCurrentSchedule, seatsCapacity', seatsCapacity)
+
                 let seatsOpen = seatsOpenElement.innerText
-                let seatsRate = ((1 - (seatsOpen / seatsCapacity)) * 100).toFixed(2)
-                seatsOpenElement.innerHTML = seatsOpen + ' / ' + seatsCapacity + '<br>' + getSeatsRateShowFormat(seatsRate)
+                console.debug('showCurrentSchedule, seatsOpen', seatsOpen)
+
+                // NOTE: Prevent duplicate click on search box
+                if (!isNaN(seatsOpen)) {
+                    let seatsRate = ((1 - (seatsOpen / seatsCapacity)) * 100).toFixed(2)
+                    seatsOpenElement.innerHTML = seatsOpen + ' / ' + seatsCapacity + '<br>' + getSeatsRateShowFormat(seatsRate)
+                }
             }
 
             let instrctorNameElementSpans = instrctorNameElement.getElementsByTagName('span');
