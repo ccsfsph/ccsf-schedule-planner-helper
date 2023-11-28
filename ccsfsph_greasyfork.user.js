@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CCSF Schedule Planner Helper
 // @namespace    https://github.com/ccsfsph/ccsf-schedule-planner-helper
-// @version      0.2.3
+// @version      0.3.0
 // @description  This userscript helps student to choose course more convenient, extenions: instructor email, instructor scores and rates from RMP for every table, and seats capacity in potential page table
 // @author       ccsfsph
 // @match        *://ccsf.collegescheduler.com/*
@@ -54,6 +54,17 @@
                 console.debug('unsafeWindow.fetch, res ', res);
                 localStorage.setItem('generate-request', JSON.stringify(res));
             }
+
+            if (url.indexOf('/regblocks') > -1) {
+                console.debug('unsafeWindow.fetch, get the generate request success');
+                // why we have to clone the origin response, otherwise the page cannot continue????
+                const responseClone = response.clone();
+                console.debug('unsafeWindow.fetch, responseClone ', responseClone);
+                let res = await responseClone.json();
+                console.debug('unsafeWindow.fetch, res ', res);
+                localStorage.setItem('regblocks', JSON.stringify(res));
+            }
+
             return response;
         });
     };
@@ -860,6 +871,22 @@
         }
     }
 
+    function getRegBlocksByCRN(crn) {
+        console.debug('getRegBlocksByCRN, parameter, crn', crn)
+        let jsonData = localStorage.getItem('regblocks')
+        console.debug('getRegBlocksByCRN, jsonData', jsonData)
+        let data = JSON.parse(jsonData)
+        console.debug('getRegBlocksByCRN, data', data)
+        let scheduleDataSections = data.sections;
+        for (let scheduleDataSection of scheduleDataSections) {
+            console.debug('getRegBlocksByCRN, scheduleDataSection ', scheduleDataSection);
+            if (scheduleDataSection.id === crn) {
+                console.debug('getRegBlocksByCRN, scheduleDataSection.id === crn, crn ', crn);
+                return scheduleDataSection;
+            }
+        }
+    }
+
     // ---------------------- Schedule Planner function end ----------------------
 
     // ====================== global functions end ======================
@@ -1010,12 +1037,38 @@ You can also contact us at: ccsfsph@gmail.com
         }
     }, pageRefreshInterval);
 
+    function getSeatsRateShowFormat(seatsRate) {
+        console.debug(`getSeatsRateShowFormat, seatsRate ${seatsRate}`)
+        let htmlFormat = ''
+
+        // >= 90%: orange
+        // 80% - 89.99%: purple
+        // 70%: - 79.99%: blue
+        // 60% - 69.99%: green
+        // < 2.0: grey (don't user white, since the in the page cannot see)
+        if (seatsRate >= 90) {
+            htmlFormat = '<span style="color: orange;">' + seatsRate + '%' + '</span>';
+        } else if (seatsRate >= 80) {
+            htmlFormat = '<span style="color: purple;">' + seatsRate + '%' + '</span>';
+        } else if (seatsRate >= 70) {
+            htmlFormat = '<span style="color: blue;">' + seatsRate + '%' + '</span>';
+        } else if (seatsRate >= 60) {
+            htmlFormat = '<span style="color: green;">' + seatsRate + '%' + '</span>';
+        } else {
+            htmlFormat = '<span style="color: grey;">' + seatsRate + '%' + '</span>';
+        }
+
+        console.debug("getSeatsRateShowFormat, htmlFormat", htmlFormat)
+        return htmlFormat
+    }
+
     function showCurrentSchedule(tHeadElement, instructorRowIndex) {
-        console.debug('showCurrentSchedule, tHeadElement ', tHeadElement);
-        console.debug('showCurrentSchedule, instructorRowIndex ', instructorRowIndex);
+        console.debug('showCurrentSchedule, parameter, tHeadElement ', tHeadElement);
+        console.debug('showCurrentSchedule, parameter, instructorRowIndex ', instructorRowIndex);
+
         // now, let us get the real name for each row
         for (let tHeadElementRow of tHeadElement.rows) {
-            console.debug(tHeadElementRow);
+            console.debug('showCurrentSchedule, tHeadElementRow ', tHeadElementRow);
         }
 
         let tableElements = tHeadElement.parentElement;
@@ -1027,17 +1080,20 @@ You can also contact us at: ccsfsph@gmail.com
         // add column first
         // Actually, we should use the loop above. But i'm tired now... just copy it from showPotentialSchedule
         let tableHeadthRows = tHeadElement.rows[0];
-        console.debug('showPotentialSchedule, tableHeadthRows', tableHeadthRows);
+        console.debug('showCurrentSchedule, tableHeadthRows', tableHeadthRows);
         let tableHeadColumnindex = -1;
         let instructorIndex = -1;
         let tableHeadthRowsThElements = tableHeadthRows.getElementsByTagName('th');
         let tableHeadTotalCell = tableHeadthRowsThElements.length;
         let instrcutorEmailCellIndex = -1;
-        console.debug('showPotentialScheduleSwitchPage, tableHeadTotalCell ', tableHeadTotalCell);
+        let seatsOpenCellIndex = -1;
+        let crnCellIndex = -1;
+        console.debug('showCurrentSchedule, tableHeadTotalCell ', tableHeadTotalCell);
+
         for (let tableHeadthRow of tableHeadthRowsThElements) {
             tableHeadColumnindex++;
-            console.debug('showPotentialSchedule, tableHeadColumnindex', tableHeadColumnindex);
-            console.debug('showPotentialSchedule, tableHeadthRow', tableHeadthRow);
+            console.debug('showCurrentSchedule, tableHeadColumnindex', tableHeadColumnindex);
+            console.debug('showCurrentSchedule, tableHeadthRow', tableHeadthRow);
             // display order: Seats Capacity、Seats Open、Seats Filled
             // first, add 'Seats Capacity' before 'Seats Open'
             if (tableHeadthRow.innerText === 'Instructor') {
@@ -1046,8 +1102,16 @@ You can also contact us at: ccsfsph@gmail.com
             if (tableHeadthRow.innerText === 'Instructor Email') {
                 instrcutorEmailCellIndex = tableHeadColumnindex;
             }
+
+            if (tableHeadthRow.innerText === 'Seats Open') {
+                seatsOpenCellIndex = tableHeadColumnindex;
+            }
+
+            if (tableHeadthRow.innerText === 'CRN #') {
+                crnCellIndex = tableHeadColumnindex;
+            }
         }
-        console.debug('showPotentialSchedule, instructorIndex', instructorIndex);
+        console.debug('showCurrentSchedule, instructorIndex', instructorIndex);
 
         if (instrcutorEmailCellIndex === -1) {
             tableHeadTotalCell += 1;
@@ -1058,13 +1122,13 @@ You can also contact us at: ccsfsph@gmail.com
             emailCapacityCell.index = instructorIndex + 1;
             emailCapacityCell.setAttribute('class', TABLE_HEAD_TH_CELL_CLASS_NAME)
             tableHeadthRows.appendChild(emailCapacityCell)
-            console.debug('showPotentialSchedule, emailCapacityCell', emailCapacityCell);
+            console.debug('showCurrentSchedule, emailCapacityCell', emailCapacityCell);
             emailCapacityCell.innerText = 'Instructor Email';
             g_instructorEmailColumnIndex = emailCapacityCell.cellIndex;
             g_tableHeadTotalCell = tableHeadTotalCell;
             g_instructorColumnIndex = instructorIndex;
-            console.debug("showPotentialSchedule, g_tableHeadTotalCell, ", g_tableHeadTotalCell);
-            console.debug("showPotentialSchedule, g_instructorEmailColumnIndex, ", g_instructorEmailColumnIndex);
+            console.debug("showCurrentSchedule, g_tableHeadTotalCell, ", g_tableHeadTotalCell);
+            console.debug("showCurrentSchedule, g_instructorEmailColumnIndex, ", g_instructorEmailColumnIndex);
         }
 
         // add instructor email here
@@ -1079,8 +1143,26 @@ You can also contact us at: ccsfsph@gmail.com
             console.debug('showCurrentSchedule, tableBodyElementTr ', tableBodyElementTr);
             let tableBodyElementTrTd = tableBodyElementTr.getElementsByTagName('td');
             console.debug('showCurrentSchedule, tableBodyElementTrTd ', tableBodyElementTrTd)
+
             let instrctorNameElement = tableBodyElementTrTd[instructorRowIndex];
             console.debug('showCurrentSchedule, instrctorNameElement ', instrctorNameElement);
+
+            // add seatsTotal to seats open cell
+            if (seatsOpenCellIndex !== -1) {
+                console.debug('showCurrentSchedule, seatsOpenCellIndex', seatsOpenCellIndex)
+                let seatsOpenElement = tableBodyElementTrTd[seatsOpenCellIndex]
+                console.debug('showCurrentSchedule, seatsOpenElement', seatsOpenElement)
+                let crnElement = tableBodyElementTrTd[crnCellIndex]
+                console.debug('showCurrentSchedule, crnElement', crnElement)
+                console.debug('showCurrentSchedule, crnElement.innerText', crnElement.innerText)
+                console.debug('showCurrentSchedule, crnElement.innerText', getRegBlocksByCRN(crnElement.innerText))
+                let seatsCapacity = getRegBlocksByCRN(crnElement.innerText).seatsCapacity
+                console.debug('showCurrentSchedule, seatsCapacity', seatsCapacity)
+                let seatsOpen = seatsOpenElement.innerText
+                let seatsRate = ((1 - (seatsOpen / seatsCapacity)) * 100).toFixed(2)
+                seatsOpenElement.innerHTML = seatsOpen + ' / ' + seatsCapacity + '<br>' + getSeatsRateShowFormat(seatsRate)
+            }
+
             let instrctorNameElementSpans = instrctorNameElement.getElementsByTagName('span');
             console.debug('showCurrentSchedule, instrctorNameElementSpans ', instrctorNameElementSpans);
             let instrctorNameElementSpan = instrctorNameElementSpans[0];
