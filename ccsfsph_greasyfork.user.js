@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CCSF Schedule Planner Helper
 // @namespace    https://github.com/ccsfsph/ccsf-schedule-planner-helper
-// @version      0.3.1
+// @version      0.3.2
 // @description  This userscript helps student to choose course more convenient, extenions: instructor email, instructor scores and rates from RMP for every table, and seats capacity in potential page table
 // @author       ccsfsph
 // @match        *://ccsf.collegescheduler.com/*
@@ -610,29 +610,39 @@
         })
     }
 
+    /**
+     * NOTE: Some professors' name is different from their name on RMP or they have multi name on RMP.
+     * 
+     * e.g. Luttrell, Maximilian have 'Max Luttrell' and 'Maximilian Luttrell'. But 'Max Luttrell' is a detailed one. So we should use this one.
+     */
+    const RMP_PROFESSOR_NAME_REFLECTION = {
+        'Luttrell, Maximilian': 'Max Luttrell',
+        'Bacsierra, Benjamin': 'B Bacsierra',
+    }
+
     function searchProfessorByRMP(professorName, changeHerfElement) {
         console.debug('invoke searchProfessorByRMP');
-        console.debug('searchProfessorByRMP, professorName ', professorName);
-        console.debug('searchProfessorByRMP, changeHerfElement ', changeHerfElement);
+        console.debug('searchProfessorByRMP, professorName', professorName);
+        console.debug('searchProfessorByRMP, changeHerfElement', changeHerfElement);
 
         let requestURL = getRMPSearchProfessorAPI();
-        console.debug('searchProfessorByRMP, requestURL ', requestURL);
+        console.debug('searchProfessorByRMP, requestURL', requestURL);
         let localStorageProfessorPropertyJSON = localStorage.getItem(professorName);
-        console.debug('searchProfessorByRMP, localStorageProfessorPropertyJSON ', localStorageProfessorPropertyJSON);
+        console.debug('searchProfessorByRMP, localStorageProfessorPropertyJSON', localStorageProfessorPropertyJSON);
 
         if (localStorageProfessorPropertyJSON) {
             console.debug('searchProfessorByRMP, nice, found the data from localStorage, not invoke from third-party!');
             let localStorageProfessorProperty = JSON.parse(localStorageProfessorPropertyJSON);
-            console.debug('searchProfessorByRMP, localStorageProfessorProperty ', localStorageProfessorProperty);
+            console.debug('searchProfessorByRMP, localStorageProfessorProperty', localStorageProfessorProperty);
             let url = getProfessorsURL(localStorageProfessorProperty.legacyId);
-            console.debug('searchProfessorByRMP, url ', url)
+            console.debug('searchProfessorByRMP, url', url)
             setInstructorElement(professorName, changeHerfElement, url);
             // add data
             let id = localStorageProfessorProperty.id;
-            console.debug('searchProfessorByRMP, id ', id);
+            console.debug('searchProfessorByRMP, id', id);
             // detail may expire, if expire, get from api
             let storeProfessorDetail = store.get(id);
-            console.debug('searchProfessorByRMP, storeProfessorDetail ', storeProfessorDetail);
+            console.debug('searchProfessorByRMP, storeProfessorDetail', storeProfessorDetail);
             if (!storeProfessorDetail || !storeProfessorDetail.value) {
                 console.debug('searchProfessorByRMP, !storeProfessorDetail || !storeProfessorDetail.value')
                 let searchProfessorDetailData = buildRMPGetProfessorDetailQuery(id);
@@ -647,25 +657,27 @@
                     },
                     data: searchProfessorDetailData,
                     onload: function (response) {
-                        console.debug('searchProfessorByRMP, professorDetail, response ', response);
+                        console.debug('searchProfessorByRMP, professorDetail, response', response);
                         let jsonText = response.responseText;
-                        console.debug('searchProfessorByRMP, professorDetail, jsonText ', jsonText);
+                        console.debug('searchProfessorByRMP, professorDetail, jsonText', jsonText);
                         let dataObj = JSON.parse(jsonText);
-                        console.debug('searchProfessorByRMP, professorDetail, dataObj ', dataObj);
+                        console.debug('searchProfessorByRMP, professorDetail, dataObj', dataObj);
                         let professorDetail = dataObj.data.node;
-                        console.debug('searchProfessorByRMP, professorDetail ', professorDetail);
+                        console.debug('searchProfessorByRMP, professorDetail', professorDetail);
 
                         if (!professorDetail) {
-                            console.debug('searchProfessorByRMP, professorDetail is null ', professorDetail);
+                            console.debug('searchProfessorByRMP, professorDetail is null', professorDetail);
                             return;
                         }
 
                         // avgRating: 2.3
                         let avgRating = professorDetail.avgRating;
                         console.debug('searchProfessorByRMP, professorDetail, avgRating', avgRating);
+
                         // avgDifficulty: 2
                         let avgDifficulty = professorDetail.avgDifficulty;
                         console.debug('searchProfessorByRMP, professorDetail, avgDifficulty', avgDifficulty);
+
                         // numRatings: 4
                         let numRatings = professorDetail.numRatings;
                         console.debug('searchProfessorByRMP, professorDetail, numRatings', numRatings);
@@ -678,39 +690,37 @@
                 return;
             } else {
                 let localStorageProfessorDetailJSON = storeProfessorDetail.value;
-                console.debug('searchProfessorByRMP, localStorageProfessorDetailJSON ', localStorageProfessorDetailJSON);
+                console.debug('searchProfessorByRMP, localStorageProfessorDetailJSON', localStorageProfessorDetailJSON);
 
                 let localStorageProfessorDetail = JSON.parse(localStorageProfessorDetailJSON);
-                console.debug('searchProfessorByRMP, localStorageProfessorDetail ', localStorageProfessorDetail);
+                console.debug('searchProfessorByRMP, localStorageProfessorDetail', localStorageProfessorDetail);
 
                 let avgRating = localStorageProfessorDetail.data.node.avgRating;
-                console.debug('searchProfessorByRMP, avgRating ', avgRating);
+                console.debug('searchProfessorByRMP, avgRating', avgRating);
 
                 let avgDifficulty = localStorageProfessorDetail.data.node.avgDifficulty;
-                console.debug('searchProfessorByRMP, avgDifficulty ', avgDifficulty);
+                console.debug('searchProfessorByRMP, avgDifficulty', avgDifficulty);
 
                 let numRatings = localStorageProfessorDetail.data.node.numRatings;
-                console.debug('searchProfessorByRMP, numRatings ', numRatings);
+                console.debug('searchProfessorByRMP, numRatings', numRatings);
 
                 setInstructorElement(professorName, changeHerfElement, url, getProfessRateShowFormat(avgRating, numRatings, avgDifficulty));
                 return;
             }
         }
 
-        let searchProfessorName = professorName;
+        let searchProfessorName = RMP_PROFESSOR_NAME_REFLECTION[professorName] || professorName;
+        console.debug('searchProfessorByRMP, professorName', professorName)
+        console.debug('searchProfessorByRMP, RMP_PROFESSOR_NAME_REFLECTION[professorName]', RMP_PROFESSOR_NAME_REFLECTION[professorName])
+        console.debug('searchProfessorByRMP, searchProfessorName', searchProfessorName)
+        
         let ignoreMultiResult = false;
-
-        if (professorName === 'Bacsierra, Benjamin') {
-            searchProfessorName = 'B Bacsierra';
-        }
-
-        if (professorName !== searchProfessorName) {
+        if (RMP_PROFESSOR_NAME_REFLECTION[professorName]) {
             ignoreMultiResult = true
         }
 
-        console.debug('searchProfessorByRMP, searchProfessorName ', searchProfessorName)
         let requestData = buildRMPSearchProfessorQuery(searchProfessorName);
-        console.debug('searchProfessorByRMP, requestData ', requestData);
+        console.debug('searchProfessorByRMP, requestData', requestData);
         GM_xmlhttpRequest({
             method: "POST",
             url: requestURL,
@@ -722,19 +732,19 @@
             },
             data: requestData,
             onload: function (response) {
-                console.debug('searchProfessorByRMP, response ', response);
+                console.debug('searchProfessorByRMP, response', response);
                 let jsonText = response.responseText;
-                console.debug('searchProfessorByRMP, jsonText ', jsonText);
+                console.debug('searchProfessorByRMP, jsonText', jsonText);
                 let dataObj = JSON.parse(jsonText);
-                console.debug('searchProfessorByRMP, dataObj ', dataObj);
+                console.debug('searchProfessorByRMP, dataObj', dataObj);
                 let teachers = dataObj.data.newSearch.teachers.edges;
-                console.debug('searchProfessorByRMP, teachers ', teachers);
+                console.debug('searchProfessorByRMP, teachers', teachers);
 
                 let teacher;
-                if (teachers.length > 1 && !ignoreMultiResult) {
-                    console.warn('searchProfessorByRMP, teachers.length > 1, teachers ', teachers);
+                if (teachers.length > 1) {
+                    console.warn('searchProfessorByRMP, teachers.length > 1, teachers', teachers);
                     for (let t of teachers) {
-                        console.debug('searchProfessorByRMP, strictCheckName, t: ', t);
+                        console.debug('searchProfessorByRMP, strictCheckName, t:', t);
                         let resultProfessorFirstName = t.node.firstName
                         let resultProfessorLastName = t.node.lastName
                         console.debug(`searchProfessorByRMP, strictCheckName, resultProfessorFirstName: ${resultProfessorFirstName}, resultProfessorLastName: ${resultProfessorLastName}`)
@@ -751,15 +761,19 @@
                     }
 
                     if (!teacher) {
-                        return;
+                        if (ignoreMultiResult) {
+                            teacher = teachers[0];
+                            console.debug(`searchProfessorByRMP, strictCheckName, ignoreMultiResult, found! teacher: ${teacher}`)
+                        } else {
+                            console.debug(`searchProfessorByRMP, strictCheckName, not found! teacher: ${teacher}`)
+                            return;
+                        }
                     }
-                }
-
-                if (teachers.length == 1) {
+                } else if (teachers.length == 1) {
                     teacher = teachers[0];
                 }
 
-                console.debug('searchProfessorByRMP, teacher ', teacher);
+                console.debug('searchProfessorByRMP, teacher', teacher);
                 // cannot search any info for the teacher in RMP
                 if (!teacher) {
                     console.warn(`searchProfessorByRMP, cannot search any info for teacher: ${professorName}`);
@@ -780,27 +794,27 @@
                         },
                         data: requestData,
                         onload: function (response) {
-                            console.debug('searchProfessorByRMP2, response ', response);
+                            console.debug('searchProfessorByRMP2, response', response);
                             let jsonText = response.responseText;
-                            console.debug('searchProfessorByRMP2, jsonText ', jsonText);
+                            console.debug('searchProfessorByRMP2, jsonText', jsonText);
                             let dataObj = JSON.parse(jsonText);
-                            console.debug('searchProfessorByRMP2, dataObj ', dataObj);
+                            console.debug('searchProfessorByRMP2, dataObj', dataObj);
                             let teachers = dataObj.data.newSearch.teachers.edges;
-                            console.debug('searchProfessorByRMP2, teachers ', teachers);
+                            console.debug('searchProfessorByRMP2, teachers', teachers);
             
                             if (teachers.length > 1) {
-                                console.warn('searchProfessorByRMP2, teachers.length > 1, teachers ', teachers);
+                                console.warn('searchProfessorByRMP2, teachers.length > 1, teachers', teachers);
                                 return;
                             }
                             teacher = teachers[0];
-                            console.debug('searchProfessorByRMP2, teacher ', teacher);
+                            console.debug('searchProfessorByRMP2, teacher', teacher);
                             // cannot search any info for the teacher in RMP
                             if (!teacher) {
                                 console.warn(`searchProfessorByRMP2, cannot search any info for teacher: ${professorName}`);
                                 console.log('searchProfessorByRMP2, try to search by FirstName')
             
                                 let professorFirstName = professorName.split(',')[1];
-                                console.debug('searchProfessorByRMP3, professorFirstName: ', professorFirstName);
+                                console.debug('searchProfessorByRMP3, professorFirstName:', professorFirstName);
                                 requestData = buildRMPSearchProfessorQuery(professorFirstName);
                                 GM_xmlhttpRequest({
                                     method: "POST",
@@ -813,20 +827,20 @@
                                     },
                                     data: requestData,
                                     onload: function (response) {
-                                        console.debug('searchProfessorByRMP3, response ', response);
+                                        console.debug('searchProfessorByRMP3, response', response);
                                         let jsonText = response.responseText;
-                                        console.debug('searchProfessorByRMP3, jsonText ', jsonText);
+                                        console.debug('searchProfessorByRMP3, jsonText', jsonText);
                                         let dataObj = JSON.parse(jsonText);
-                                        console.debug('searchProfessorByRMP3, dataObj ', dataObj);
+                                        console.debug('searchProfessorByRMP3, dataObj', dataObj);
                                         let teachers = dataObj.data.newSearch.teachers.edges;
-                                        console.debug('searchProfessorByRMP3, teachers ', teachers);
+                                        console.debug('searchProfessorByRMP3, teachers', teachers);
                         
                                         if (teachers.length > 1) {
-                                            console.warn('searchProfessorByRMP3, teachers.length > 1, teachers ', teachers);
+                                            console.warn('searchProfessorByRMP3, teachers.length > 1, teachers', teachers);
                                             return;
                                         }
                                         teacher = teachers[0];
-                                        console.debug('searchProfessorByRMP3, teacher ', teacher);
+                                        console.debug('searchProfessorByRMP3, teacher', teacher);
                                         // cannot search any info for the teacher in RMP
                                         if (!teacher) {
                                             console.warn(`searchProfessorByRMP3, cannot search any info for teacher: ${professorName}`);
@@ -856,16 +870,16 @@
 
     // ---------------------- Schedule Planner function begin ----------------------
     function getScheduleByCRN(crn) {
-        console.debug('getScheduleByCRN, crn ' + crn);
+        console.debug('getScheduleByCRN, crn', crn);
         let scheduleJSONData = localStorage.getItem('generate-request');
-        console.debug('getScheduleByCRN, scheduleJSONData ' + scheduleJSONData);
+        console.debug('getScheduleByCRN, scheduleJSONData' + scheduleJSONData);
         let scheduleData = JSON.parse(scheduleJSONData);
         console.debug('getScheduleByCRN, scheduleData', scheduleData);
         let scheduleDataSections = scheduleData.sections;
         for (let scheduleDataSection of scheduleDataSections) {
-            console.debug('getScheduleByCRN, scheduleDataSection ', scheduleDataSection);
+            console.debug('getScheduleByCRN, scheduleDataSection', scheduleDataSection);
             if (scheduleDataSection.id === crn) {
-                console.debug('getScheduleByCRN, scheduleDataSection.id === crn, crn ', crn);
+                console.debug('getScheduleByCRN, scheduleDataSection.id === crn, crn', crn);
                 return scheduleDataSection;
             }
         }
@@ -879,9 +893,9 @@
         console.debug('getRegBlocksByCRN, data', data)
         let scheduleDataSections = data.sections;
         for (let scheduleDataSection of scheduleDataSections) {
-            console.debug('getRegBlocksByCRN, scheduleDataSection ', scheduleDataSection);
+            console.debug('getRegBlocksByCRN, scheduleDataSection', scheduleDataSection);
             if (scheduleDataSection.id === crn) {
-                console.debug('getRegBlocksByCRN, scheduleDataSection.id === crn, crn ', crn);
+                console.debug('getRegBlocksByCRN, scheduleDataSection.id === crn, crn', crn);
                 return scheduleDataSection;
             }
         }
@@ -926,7 +940,7 @@ You can also contact us at: ccsfsph@gmail.com
             console.debug("g_pageLoadFinish, flag, ", flag);
 
             if (PAGE === PAGE_COURSE_SCHEDULE) {
-                console.debug("setInterval, PAGE === PAGE_COURSE_SCHEDULE, g_initCoursePageEventFlag, ", g_initCoursePageEventFlag)
+                console.debug("setInterval, PAGE === PAGE_COURSE_SCHEDULE, g_initCoursePageEventFlag:", g_initCoursePageEventFlag)
                 if (!g_initCoursePageEventFlag) {
                     let barElementInitResult = false;
                     let switchTabElementInitResult = false;
