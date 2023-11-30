@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CCSF Schedule Planner Helper
 // @namespace    https://github.com/ccsfsph/ccsf-schedule-planner-helper
-// @version      0.3.2
+// @version      0.3.3
 // @description  This userscript helps student to choose course more convenient, extenions: instructor email, instructor scores and rates from RMP for every table, and seats capacity in potential page table
 // @author       ccsfsph
 // @match        *://ccsf.collegescheduler.com/*
@@ -616,8 +616,10 @@
      * e.g. Luttrell, Maximilian have 'Max Luttrell' and 'Maximilian Luttrell'. But 'Max Luttrell' is a detailed one. So we should use this one.
      */
     const RMP_PROFESSOR_NAME_REFLECTION = {
+        // 'Name On Schedule Planner': 'Name On RMP',
         'Luttrell, Maximilian': 'Max Luttrell',
         'Bacsierra, Benjamin': 'B Bacsierra',
+        'Cannon, Joseph': 'Joe Cannon',
     }
 
     function searchProfessorByRMP(professorName, changeHerfElement) {
@@ -757,6 +759,20 @@
                             console.debug(`searchProfessorByRMP, strictCheckName, found! t: ${t}`)
                             teacher = t;
                             break;
+                        }
+
+                        // if this name exist in constant pool, find it by name
+                        if (ignoreMultiResult) {
+                            console.debug('searchProfessorByRMP, teachers.length > 1, ignoreMultiResult', ignoreMultiResult)
+                            if (
+                                resultProfessorFirstName.toLowerCase().trim() === searchProfessorName.split(' ')[0].toLowerCase().trim()
+                                &&
+                                resultProfessorLastName.toLowerCase().trim() === searchProfessorName.split(' ')[1].toLowerCase().trim()
+                            ) {
+                                console.debug('searchProfessorByRMP, teachers.length > 1, ignoreMultiResult, strictCheckName, found!', t)
+                                teacher = t;
+                                break;
+                            }
                         }
                     }
 
