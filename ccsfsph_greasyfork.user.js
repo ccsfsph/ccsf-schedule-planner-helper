@@ -750,16 +750,16 @@
                         let resultProfessorFirstName = t.node.firstName
                         let resultProfessorLastName = t.node.lastName
                         console.debug(`searchProfessorByRMP, strictCheckName, resultProfessorFirstName: ${resultProfessorFirstName}, resultProfessorLastName: ${resultProfessorLastName}`)
-                        if
-                        (
-                            resultProfessorLastName.toLowerCase().trim() === searchProfessorName.split(',')[0].toLowerCase().trim()
-                            &&
-                            resultProfessorFirstName.toLowerCase().trim() === searchProfessorName.split(',')[1].toLowerCase().trim()
-                        ) {
-                            console.debug(`searchProfessorByRMP, strictCheckName, found! t: ${t}`)
-                            teacher = t;
-                            break;
-                        }
+                        // if
+                        // (
+                        //     resultProfessorLastName.toLowerCase().trim() === searchProfessorName.split(',')[0].toLowerCase().trim()
+                        //     &&
+                        //     resultProfessorFirstName.toLowerCase().trim() === searchProfessorName.split(',')[1].toLowerCase().trim()
+                        // ) {
+                        //     console.debug('searchProfessorByRMP, strictCheckName, found! t:', t)
+                        //     teacher = t;
+                        //     break;
+                        // }
 
                         // if this name exist in constant pool, find it by name
                         if (ignoreMultiResult) {
@@ -781,8 +781,11 @@
                             teacher = teachers[0];
                             console.debug(`searchProfessorByRMP, strictCheckName, ignoreMultiResult, found! teacher: ${teacher}`)
                         } else {
-                            console.debug(`searchProfessorByRMP, strictCheckName, not found! teacher: ${teacher}`)
-                            return;
+                            // order by legacyId (represent the time created in database)
+                            teachers = teachers.sort((a, b) => a.node.legacyId - b.node.legacyId);
+                            console.debug('searchProfessorByRMP, teachers.length > 1, order by legacyId, teachers:', teachers)
+                            teacher = teachers[0];
+                            console.debug('searchProfessorByRMP, order by legacyId, teacher:', teacher)
                         }
                     }
                 } else if (teachers.length == 1) {
