@@ -644,6 +644,9 @@
 
         'Sam Johnson': 'Samuel Johnson',
         'Sean Laughlin': 'Sean M Laughlin',
+        'Sheri Miraglia': 'Sheri J Miraglia',
+        'David Palaita': 'David (vika) Palaita',
+        'Shelly Collins Rawle': 'Shelly-Ann Collins Rawle',
     }
 
     function searchProfessorByRMP(professorName, changeHerfElement) {
