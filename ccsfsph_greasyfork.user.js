@@ -641,6 +641,9 @@
 
         'Cannon, Joseph': 'Joe Cannon',
         'Joseph Cannon': 'Joe Cannon',
+
+        'Sam Johnson': 'Samuel Johnson',
+        'Sean Laughlin': 'Sean M Laughlin',
     }
 
     function searchProfessorByRMP(professorName, changeHerfElement) {
@@ -772,24 +775,16 @@
                         let resultProfessorFirstName = t.node.firstName
                         let resultProfessorLastName = t.node.lastName
                         let resultProfessorLegacyId = t.node.legacyId
-                        console.debug(`searchProfessorByRMP, strictCheckName, resultProfessorFirstName: ${resultProfessorFirstName}, resultProfessorLastName: ${resultProfessorLastName}`)
-                        if
-                        (
-                            resultProfessorLastName.toLowerCase().trim() === searchProfessorName.split(' ')[1].toLowerCase().trim()
-                            &&
-                            resultProfessorFirstName.toLowerCase().trim() === searchProfessorName.split(' ')[0].toLowerCase().trim()
-                        ) {
+                        console.debug(`searchProfessorByRMP, resultProfessorFirstName: ${resultProfessorFirstName}, resultProfessorLastName: ${resultProfessorLastName}`)
+                        let resultProfessorFullName = `${resultProfessorFirstName}${resultProfessorLastName}`.replaceAll(' ','').toLowerCase().trim();
+                        let searchProfessorFullName = searchProfessorName.replaceAll(' ', '').toLowerCase().trim();
+                        console.debug(`searchProfessorByRMP, resultProfessorFullName: ${resultProfessorFullName}, searchProfessorFullName: ${searchProfessorFullName}`)
+                        if (resultProfessorFullName === searchProfessorFullName) {
                             console.debug('searchProfessorByRMP, strictCheckName, found! t:', t)
                             sameNameProfessors.push(t);
-                        }
 
-                        // If this name exists in constant pool, find it by id
-                        if (ignoreMultiResult) {
-                            if (
-                                resultProfessorFirstName.toLowerCase().trim() === searchProfessorName.split(' ')[1].toLowerCase().trim()
-                                &&
-                                resultProfessorLastName.toLowerCase().trim() === searchProfessorName.split(' ')[0].toLowerCase().trim()
-                            ) {
+                            // If this name exists in constant pool, we should use it directly
+                            if (ignoreMultiResult) {
                                 console.debug('searchProfessorByRMP, strictCheckName, ignoreMultiResult, found! teacher:', t)
                                 sameNameProfessors = [t];
                                 break;
