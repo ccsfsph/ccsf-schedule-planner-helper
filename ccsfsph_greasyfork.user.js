@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CCSF Schedule Planner Helper
 // @namespace    https://github.com/ccsfsph/ccsf-schedule-planner-helper
-// @version      0.3.4
+// @version      0.4.0
 // @description  This userscript helps student to choose course more convenient, extenions: instructor email, instructor scores and rates from RMP for every table, and seats capacity in potential page table
 // @author       ccsfsph
 // @match        *://ccsf.collegescheduler.com/*
@@ -352,34 +352,50 @@
     }
 
     /**
-     * convert professor name from format like `Lastname, Firstname` to `firstname-lastname`
+     * Convert professor's name from format like `Firstname Lastname` to `firstname-lastname`
      *
      * @param {String} professorName
      * @returns reversed name
      */
     function reverseProfessorName(professorName) {
-        // convert from `Conner, Constance` to `constance-conner`
-        console.debug('reverseProfessorName, professorName ', professorName);
+        console.debug('reverseProfessorName, professorName', professorName);
         if (!professorName) {
             console.warn('reverseProfessorName, professorName is blank!!!')
             return;
         }
-        // TODO will this happen the professor name no ,?
-        if (professorName.indexOf(',') == -1) {
-            console.warn('reverseProfessorName, professorName no , ', professorName);
-            return;
+
+        // NOTE: New version use blank space for name instead, however, in the past, the name use `,` to split the name
+        let separator = ' ';
+
+        if (!professorName.includes(separator)) {
+            console.warn(`reverseProfessorName, professorName no ' ' space in name ${professorName} try to look for ',' instead`);
+            separator = ',';
+            if (!professorName.includes(separator)) {
+                console.error(`reverseProfessorName, professorName neither ' ' nor ',' in name ${professorName}`);
+                return;
+            }
         }
 
-        let professorNameArray = professorName.split(',');
+        let professorNameArray = professorName.split(separator);
         console.debug("reverseProfessorName, professorNameArray ", professorNameArray)
-        // there are some exceptions, like `Collins Rawle, Shelly`, we should remove the blank symbol, and add an hypen `-`
-        let lastName = professorNameArray[0].trim().toLowerCase().replace(" ", "-");
-        console.debug(`reverseProfessorName, professorName: ${professorName}, lastName: ${lastName}`)
-        let firstName = professorNameArray[1].trim().toLowerCase().replace(" ", "-");
-        console.debug(`reverseProfessorName, professorName: ${professorName}, firstName: ${firstName}`)
-        let conversedProfessorName = firstName + '-' + lastName
-        console.debug(`reverseProfessorName, professorName: ${professorName}, conversedProfessorName: ${conversedProfessorName}`)
-        return conversedProfessorName;
+        if (separator === ' ') {
+            let firstName = professorNameArray[0].trim().toLowerCase().replace(" ", "-");
+            console.debug(`reverseProfessorName, professorName: ${professorName}, firstName: ${firstName}`)
+            let lastName = professorNameArray[1].trim().toLowerCase().replace(" ", "-");
+            console.debug(`reverseProfessorName, professorName: ${professorName}, lastName: ${lastName}`)
+            let conversedProfessorName = firstName + '-' + lastName
+            console.debug(`reverseProfessorName, professorName: ${professorName}, conversedProfessorName: ${conversedProfessorName}`)
+            return conversedProfessorName;
+        } else {
+            // there are some exceptions, like `Collins Rawle, Shelly`, we should remove the blank symbol, and add an hypen `-`
+            let lastName = professorNameArray[0].trim().toLowerCase().replace(" ", "-");
+            console.debug(`reverseProfessorName, professorName: ${professorName}, lastName: ${lastName}`)
+            let firstName = professorNameArray[1].trim().toLowerCase().replace(" ", "-");
+            console.debug(`reverseProfessorName, professorName: ${professorName}, firstName: ${firstName}`)
+            let conversedProfessorName = firstName + '-' + lastName
+            console.debug(`reverseProfessorName, professorName: ${professorName}, conversedProfessorName: ${conversedProfessorName}`)
+            return conversedProfessorName;
+        }
     }
 
     // ---------------------- base function end ----------------------
@@ -612,14 +628,19 @@
 
     /**
      * NOTE: Some professors' name is different from their name on RMP or they have multi name on RMP.
-     * 
+     *
      * e.g. Luttrell, Maximilian have 'Max Luttrell' and 'Maximilian Luttrell'. But 'Max Luttrell' is a detailed one. So we should use this one.
      */
     const RMP_PROFESSOR_NAME_REFLECTION = {
         // 'Name On Schedule Planner': 'Name On RMP',
         'Luttrell, Maximilian': 'Max Luttrell',
+        'Maximilian Luttrell': 'Max Luttrell',
+
         'Bacsierra, Benjamin': 'B Bacsierra',
+        'Benjamin Bacsierra': 'B Bacsierra',
+
         'Cannon, Joseph': 'Joe Cannon',
+        'Joseph Cannon': 'Joe Cannon',
     }
 
     function searchProfessorByRMP(professorName, changeHerfElement) {
@@ -715,7 +736,7 @@
         console.debug('searchProfessorByRMP, professorName', professorName)
         console.debug('searchProfessorByRMP, RMP_PROFESSOR_NAME_REFLECTION[professorName]', RMP_PROFESSOR_NAME_REFLECTION[professorName])
         console.debug('searchProfessorByRMP, searchProfessorName', searchProfessorName)
-        
+
         let ignoreMultiResult = false;
         if (RMP_PROFESSOR_NAME_REFLECTION[professorName]) {
             ignoreMultiResult = true
@@ -745,50 +766,48 @@
                 let teacher;
                 if (teachers.length > 1) {
                     console.warn('searchProfessorByRMP, teachers.length > 1, teachers', teachers);
+                    let sameNameProfessors = [];
                     for (let t of teachers) {
                         console.debug('searchProfessorByRMP, strictCheckName, t:', t);
                         let resultProfessorFirstName = t.node.firstName
                         let resultProfessorLastName = t.node.lastName
+                        let resultProfessorLegacyId = t.node.legacyId
                         console.debug(`searchProfessorByRMP, strictCheckName, resultProfessorFirstName: ${resultProfessorFirstName}, resultProfessorLastName: ${resultProfessorLastName}`)
-                        // if
-                        // (
-                        //     resultProfessorLastName.toLowerCase().trim() === searchProfessorName.split(',')[0].toLowerCase().trim()
-                        //     &&
-                        //     resultProfessorFirstName.toLowerCase().trim() === searchProfessorName.split(',')[1].toLowerCase().trim()
-                        // ) {
-                        //     console.debug('searchProfessorByRMP, strictCheckName, found! t:', t)
-                        //     teacher = t;
-                        //     break;
-                        // }
+                        if
+                        (
+                            resultProfessorLastName.toLowerCase().trim() === searchProfessorName.split(' ')[1].toLowerCase().trim()
+                            &&
+                            resultProfessorFirstName.toLowerCase().trim() === searchProfessorName.split(' ')[0].toLowerCase().trim()
+                        ) {
+                            console.debug('searchProfessorByRMP, strictCheckName, found! t:', t)
+                            sameNameProfessors.push(t);
+                        }
 
-                        // if this name exist in constant pool, find it by name
+                        // If this name exists in constant pool, find it by id
                         if (ignoreMultiResult) {
-                            console.debug('searchProfessorByRMP, teachers.length > 1, ignoreMultiResult', ignoreMultiResult)
                             if (
-                                resultProfessorFirstName.toLowerCase().trim() === searchProfessorName.split(' ')[0].toLowerCase().trim()
+                                resultProfessorFirstName.toLowerCase().trim() === searchProfessorName.split(' ')[1].toLowerCase().trim()
                                 &&
-                                resultProfessorLastName.toLowerCase().trim() === searchProfessorName.split(' ')[1].toLowerCase().trim()
+                                resultProfessorLastName.toLowerCase().trim() === searchProfessorName.split(' ')[0].toLowerCase().trim()
                             ) {
-                                console.debug('searchProfessorByRMP, teachers.length > 1, ignoreMultiResult, strictCheckName, found!', t)
-                                teacher = t;
+                                console.debug('searchProfessorByRMP, strictCheckName, ignoreMultiResult, found! teacher:', t)
+                                sameNameProfessors = [t];
                                 break;
                             }
                         }
                     }
 
-                    if (!teacher) {
-                        if (ignoreMultiResult) {
-                            teacher = teachers[0];
-                            console.debug(`searchProfessorByRMP, strictCheckName, ignoreMultiResult, found! teacher: ${teacher}`)
-                        } else {
-                            // order by legacyId (represent the time created in database)
-                            teachers = teachers.sort((a, b) => a.node.legacyId - b.node.legacyId);
-                            console.debug('searchProfessorByRMP, teachers.length > 1, order by legacyId, teachers:', teachers)
-                            teacher = teachers[0];
-                            console.debug('searchProfessorByRMP, order by legacyId, teacher:', teacher)
-                        }
+                    if (ignoreMultiResult) {
+                        teacher = teachers[0];
+                        console.debug(`searchProfessorByRMP, strictCheckName, ignoreMultiResult, found! teacher: ${teacher}`)
+                    } else {
+                        // order by legacyId (represent the time created in database)
+                        teachers = sameNameProfessors.sort((a, b) => a.node.legacyId - b.node.legacyId);
+                        console.debug('searchProfessorByRMP, teachers.length > 1, order by legacyId, teachers:', teachers)
+                        teacher = teachers[0];
+                        console.debug('searchProfessorByRMP, order by legacyId, teacher:', teacher)
                     }
-                } else if (teachers.length == 1) {
+                } else if (teachers.length === 1) {
                     teacher = teachers[0];
                 }
 
@@ -799,7 +818,7 @@
                     console.log('searchProfessorByRMP, try to search by LastName')
 
                     let professorLastName = professorName.split(',')[0];
-                    
+
                     console.debug('searchProfessorByRMP, professorLastName: ', professorLastName);
                     requestData = buildRMPSearchProfessorQuery(professorLastName);
                     GM_xmlhttpRequest({
@@ -820,7 +839,7 @@
                             console.debug('searchProfessorByRMP2, dataObj', dataObj);
                             let teachers = dataObj.data.newSearch.teachers.edges;
                             console.debug('searchProfessorByRMP2, teachers', teachers);
-            
+
                             if (teachers.length > 1) {
                                 console.warn('searchProfessorByRMP2, teachers.length > 1, teachers', teachers);
                                 return;
@@ -831,7 +850,7 @@
                             if (!teacher) {
                                 console.warn(`searchProfessorByRMP2, cannot search any info for teacher: ${professorName}`);
                                 console.log('searchProfessorByRMP2, try to search by FirstName')
-            
+
                                 let professorFirstName = professorName.split(',')[1];
                                 console.debug('searchProfessorByRMP3, professorFirstName:', professorFirstName);
                                 requestData = buildRMPSearchProfessorQuery(professorFirstName);
@@ -853,7 +872,7 @@
                                         console.debug('searchProfessorByRMP3, dataObj', dataObj);
                                         let teachers = dataObj.data.newSearch.teachers.edges;
                                         console.debug('searchProfessorByRMP3, teachers', teachers);
-                        
+
                                         if (teachers.length > 1) {
                                             console.warn('searchProfessorByRMP3, teachers.length > 1, teachers', teachers);
                                             return;
@@ -864,7 +883,7 @@
                                         if (!teacher) {
                                             console.warn(`searchProfessorByRMP3, cannot search any info for teacher: ${professorName}`);
                                             console.log('searchProfessorByRMP3, try to search by LastName')
-                        
+
                                             return;
                                         }
                                         searchProfessorDataHandler(teacher, professorName, changeHerfElement, requestURL)
