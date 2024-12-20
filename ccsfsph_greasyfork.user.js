@@ -647,6 +647,10 @@
         'Sheri Miraglia': 'Sheri J Miraglia',
         'David Palaita': 'David (vika) Palaita',
         'Shelly Collins Rawle': 'Shelly-Ann Collins Rawle',
+        'Samuel Bowne': 'Sam Bowne',
+        'Mike McKeever': 'M McKeever',
+        'Dan Smith': 'Daniel Smith',
+        'Jill Evans': 'Jill Evans (Johnsen)',
     }
 
     function searchProfessorByRMP(professorName, changeHerfElement) {
