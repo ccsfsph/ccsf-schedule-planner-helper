@@ -651,6 +651,7 @@
         'Mike McKeever': 'M McKeever',
         'Dan Smith': 'Daniel Smith',
         'Jill Evans': 'Jill Evans (Johnsen)',
+        'Chu-Hui Lai': 'Chu-Hui J Lai',
     }
 
     function searchProfessorByRMP(professorName, changeHerfElement) {
